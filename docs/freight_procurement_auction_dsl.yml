@@ -1,0 +1,2285 @@
+app:
+  description: Autonomous intelligent freight procurement & multi-carrier reverse
+    auction engine with game-theoretic bidding simulation, 3-year TCO Monte Carlo
+    projections, BATNA negotiation AI, and multi-stakeholder dispatch.
+  icon: 🚢
+  icon_background: '#E0F2FE'
+  icon_type: null
+  mode: workflow
+  name: Freight-Procurement-Auction-Engine-v1
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: package
+  value:
+    plugin_unique_identifier: langgenius/groq:0.0.17@f042c19aec5896e2141909194c463f8ea4cb2326f5bdc51afbfb6542e6b4bcd8
+    version: null
+kind: app
+version: 0.6.0
+workflow:
+  conversation_variables: []
+  environment_variables:
+  - description: Dun & Bradstreet direct API key for carrier credit rating verification
+    id: env_duns_api_key
+    name: DUNS_API_KEY
+    selector:
+    - env
+    - DUNS_API_KEY
+    value: ''
+    value_type: secret
+  - description: Carrier API Bearer token for real-time slot and spot rate verification
+    id: env_carrier_api_key
+    name: CARRIER_API_KEY
+    selector:
+    - env
+    - CARRIER_API_KEY
+    value: ''
+    value_type: secret
+  - description: Slack / Teams incoming webhook for automated stakeholder notification
+    id: env_slack_webhook
+    name: SLACK_WEBHOOK
+    selector:
+    - env
+    - SLACK_WEBHOOK
+    value: ''
+    value_type: secret
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        attachment_image_file_size_limit: 2
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        file_upload_limit: 20
+        image_file_batch_limit: 10
+        image_file_size_limit: 10
+        single_chunk_attachment_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        sourceType: start
+        targetType: llm
+      id: start-source-param_extract-target
+      source: start
+      sourceHandle: source
+      target: param_extract
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: llm
+        targetType: llm
+      id: param_extract-source-llm_decompose-target
+      source: param_extract
+      sourceHandle: source
+      target: llm_decompose
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: llm
+        targetType: code
+      id: llm_decompose-source-code_master_spec-target
+      source: llm_decompose
+      sourceHandle: source
+      target: code_master_spec
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: code
+        targetType: llm
+      id: code_master_spec-source-query_gen-target
+      source: code_master_spec
+      sourceHandle: source
+      target: query_gen
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: llm
+        targetType: code
+      id: query_gen-source-rrf_intelligence_fusion-target
+      source: query_gen
+      sourceHandle: source
+      target: rrf_intelligence_fusion
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: code
+        targetType: code
+      id: rrf_intelligence_fusion-source-carrier_qual_engine-target
+      source: rrf_intelligence_fusion
+      sourceHandle: source
+      target: carrier_qual_engine
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: code
+        targetType: llm
+      id: carrier_qual_engine-source-qual_auditor-target
+      source: carrier_qual_engine
+      sourceHandle: source
+      target: qual_auditor
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: llm
+        targetType: code
+      id: qual_auditor-source-should_cost_model-target
+      source: qual_auditor
+      sourceHandle: source
+      target: should_cost_model
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: code
+        targetType: llm
+      id: should_cost_model-source-auction_strategy-target
+      source: should_cost_model
+      sourceHandle: source
+      target: auction_strategy
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: llm
+        targetType: code
+      id: auction_strategy-source-game_theory_auction-target
+      source: auction_strategy
+      sourceHandle: source
+      target: game_theory_auction
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: code
+        targetType: llm
+      id: game_theory_auction-source-counter_offer_eval-target
+      source: game_theory_auction
+      sourceHandle: source
+      target: counter_offer_eval
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: llm
+        targetType: code
+      id: counter_offer_eval-source-tco_calculator-target
+      source: counter_offer_eval
+      sourceHandle: source
+      target: tco_calculator
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: code
+        targetType: code
+      id: tco_calculator-source-monte_carlo_tco-target
+      source: tco_calculator
+      sourceHandle: source
+      target: monte_carlo_tco
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: code
+        targetType: code
+      id: monte_carlo_tco-source-sensitivity_tornado-target
+      source: monte_carlo_tco
+      sourceHandle: source
+      target: sensitivity_tornado
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: llm
+        targetType: llm
+      id: counter_offer_eval-source-contract_risk_assessor-target
+      source: counter_offer_eval
+      sourceHandle: source
+      target: contract_risk_assessor
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: llm
+        targetType: llm
+      id: contract_risk_assessor-source-contract_redline_gen-target
+      source: contract_risk_assessor
+      sourceHandle: source
+      target: contract_redline_gen
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: code
+        targetType: code
+      id: sensitivity_tornado-source-batna_leverage_engine-target
+      source: sensitivity_tornado
+      sourceHandle: source
+      target: batna_leverage_engine
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: llm
+        targetType: code
+      id: contract_redline_gen-source-batna_leverage_engine-target
+      source: contract_redline_gen
+      sourceHandle: source
+      target: batna_leverage_engine
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: code
+        targetType: llm
+      id: batna_leverage_engine-source-negotiation_strategist-target
+      source: batna_leverage_engine
+      sourceHandle: source
+      target: negotiation_strategist
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: llm
+        targetType: code
+      id: negotiation_strategist-source-scenario_tree_engine-target
+      source: negotiation_strategist
+      sourceHandle: source
+      target: scenario_tree_engine
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: code
+        targetType: llm
+      id: scenario_tree_engine-source-adversarial_negotiation_duel-target
+      source: scenario_tree_engine
+      sourceHandle: source
+      target: adversarial_negotiation_duel
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: llm
+        targetType: llm
+      id: adversarial_negotiation_duel-source-brief_procurement-target
+      source: adversarial_negotiation_duel
+      sourceHandle: source
+      target: brief_procurement
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: llm
+        targetType: llm
+      id: adversarial_negotiation_duel-source-brief_legal-target
+      source: adversarial_negotiation_duel
+      sourceHandle: source
+      target: brief_legal
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: llm
+        targetType: llm
+      id: adversarial_negotiation_duel-source-brief_finance-target
+      source: adversarial_negotiation_duel
+      sourceHandle: source
+      target: brief_finance
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: llm
+        targetType: llm
+      id: adversarial_negotiation_duel-source-brief_operations-target
+      source: adversarial_negotiation_duel
+      sourceHandle: source
+      target: brief_operations
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: llm
+        targetType: code
+      id: brief_procurement-source-package_consolidator-target
+      source: brief_procurement
+      sourceHandle: source
+      target: package_consolidator
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: llm
+        targetType: code
+      id: brief_legal-source-package_consolidator-target
+      source: brief_legal
+      sourceHandle: source
+      target: package_consolidator
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: llm
+        targetType: code
+      id: brief_finance-source-package_consolidator-target
+      source: brief_finance
+      sourceHandle: source
+      target: package_consolidator
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: llm
+        targetType: code
+      id: brief_operations-source-package_consolidator-target
+      source: brief_operations
+      sourceHandle: source
+      target: package_consolidator
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: code
+        targetType: code
+      id: package_consolidator-source-dashboard_builder-target
+      source: package_consolidator
+      sourceHandle: source
+      target: dashboard_builder
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: code
+        targetType: code
+      id: dashboard_builder-source-award_decision_engine-target
+      source: dashboard_builder
+      sourceHandle: source
+      target: award_decision_engine
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: code
+        targetType: code
+      id: award_decision_engine-source-audit_cost_telemetry-target
+      source: award_decision_engine
+      sourceHandle: source
+      target: audit_cost_telemetry
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: code
+        targetType: end
+      id: audit_cost_telemetry-source-end-target
+      source: audit_cost_telemetry
+      sourceHandle: source
+      target: end
+      targetHandle: target
+      type: custom
+    nodes:
+    - data:
+        selected: false
+        title: Freight Procurement Trigger
+        type: start
+        variables:
+        - default: Rotterdam, NL
+          label: Origin
+          max_length: 100
+          required: true
+          type: text-input
+          variable: origin
+        - default: Shanghai, CN
+          label: Destination
+          max_length: 100
+          required: true
+          type: text-input
+          variable: destination
+        - default: High-precision lithography optics, semiconductor wafer cassettes,
+            and cryogenic cooling subunits. High value, shock sensitive, temperature
+            controlled.
+          label: Cargo Description
+          max_length: 2000
+          required: true
+          type: paragraph
+          variable: cargo_description
+        - default: 8500
+          label: Cargo Weight (kg)
+          required: true
+          type: number
+          variable: cargo_weight_kg
+        - default: 24.5
+          label: Cargo Volume (CBM)
+          required: true
+          type: number
+          variable: cargo_volume_cbm
+        - default: 2-8C Ambient Controlled
+          label: Temperature Control
+          options:
+          - None
+          - 2-8C Ambient Controlled
+          - Frozen -18C
+          - Ultra-Low Cryogenic
+          required: true
+          type: select
+          variable: temperature_required
+        - default: Non-Hazmat
+          label: Hazmat Classification
+          options:
+          - Non-Hazmat
+          - Class 3 Flammable Liquid
+          - Class 8 Corrosive
+          - Class 9 Miscellaneous
+          required: true
+          type: select
+          variable: hazmat_class
+        - default: '2026-12-15'
+          label: Delivery Deadline
+          max_length: 50
+          required: true
+          type: text-input
+          variable: delivery_deadline
+        - default: CIF
+          label: Incoterms
+          options:
+          - CIF
+          - FOB
+          - DDP
+          - DAP
+          - EXW
+          required: true
+          type: select
+          variable: incoterms
+        - default: EXPEDITED_CRITICAL
+          label: Urgency Level
+          options:
+          - EXPEDITED_CRITICAL
+          - STANDARD_COMMERCIAL
+          - DEFERRED_ECONOMY
+          required: true
+          type: select
+          variable: urgency_level
+      height: 80
+      id: start
+      position:
+        x: 60
+        y: 360
+      positionAbsolute:
+        x: 60
+        y: 360
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        context:
+          enabled: false
+        model:
+          completion_params:
+            temperature: 0.1
+          mode: chat
+          name: openai/gpt-oss-20b
+          provider: langgenius/groq/groq
+        prompt_template:
+        - role: system
+          text: "You are an expert freight logistics parameter normalization engineer.\n\
+            Extract normalized freight requirement metadata into strict JSON.\nJSON\
+            \ schema:\n{\n  \"transport_modes_needed\": [\"road\", \"sea\", \"air\"\
+            ],\n  \"is_hazmat\": false,\n  \"requires_temperature_control\": true,\n\
+            \  \"is_oversized\": false,\n  \"requires_special_handling\": true,\n\
+            \  \"estimated_transit_days\": 28,\n  \"origin_country_code\": \"NL\"\
+            ,\n  \"destination_country_code\": \"CN\",\n  \"cargo_density_kg_per_cbm\"\
+            : 346.9\n}\nOutput valid JSON only."
+        - role: user
+          text: 'Origin: {{#start.origin#}}
+
+            Destination: {{#start.destination#}}
+
+            Cargo: {{#start.cargo_description#}}
+
+            Weight: {{#start.cargo_weight_kg#}} kg, Volume: {{#start.cargo_volume_cbm#}}
+            cbm
+
+            Temperature: {{#start.temperature_required#}}
+
+            Hazmat: {{#start.hazmat_class#}}
+
+            Deadline: {{#start.delivery_deadline#}}
+
+            Incoterms: {{#start.incoterms#}}
+
+            Urgency: {{#start.urgency_level#}}'
+        selected: false
+        title: Requirement Normalization (20B)
+        type: llm
+      height: 80
+      id: param_extract
+      position:
+        x: 360
+        y: 360
+      positionAbsolute:
+        x: 360
+        y: 360
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        context:
+          enabled: false
+        model:
+          completion_params:
+            temperature: 0.2
+          mode: chat
+          name: openai/gpt-oss-120b
+          provider: langgenius/groq/groq
+        prompt_template:
+        - role: system
+          text: "You are a master multi-modal freight forwarder with 25+ years experience.\n\
+            Decompose the complete freight requirement into discrete, sequential journey\
+            \ legs.\nSpecify transport modes, origin/destination terminals, distance\
+            \ estimates, transit times, legal constraints (CMR, CIM, Hague-Visby,\
+            \ IMDG, IATA DGR, customs borders), and required shipping documentation.\n\
+            \nOutput strict JSON only:\n{\n  \"journey_id\": \"JRN-EU-ASIA-EXP\",\n\
+            \  \"legs\": [\n    {\n      \"leg_number\": 1,\n      \"mode\": \"road\"\
+            ,\n      \"from\": \"Origin Facility, Netherlands\",\n      \"to\": \"\
+            Port of Rotterdam Terminal APM-2\",\n      \"distance_km\": 110,\n   \
+            \   \"transit_days\": 0.5,\n      \"constraints\": [\"Pre-carriage appointment\
+            \ slot\", \"GDP reefer trailer monitoring\"],\n      \"documentation\"\
+            : [\"CMR Waybill\", \"Packing List\", \"Pharma Release Certificate\"]\n\
+            \    },\n    {\n      \"leg_number\": 2,\n      \"mode\": \"sea\",\n \
+            \     \"from\": \"Port of Rotterdam\",\n      \"to\": \"Port of Shanghai\
+            \ (Yangshan Deepwater)\",\n      \"distance_km\": 19500,\n      \"transit_days\"\
+            : 26.0,\n      \"constraints\": [\"Hague-Visby liability rules\", \"Active\
+            \ reefer container plug-in logs\", \"Suez or Cape bypass clearance\"],\n\
+            \      \"documentation\": [\"Ocean Bill of Lading\", \"Commercial Invoice\"\
+            , \"Dangerous Goods Declaration if applicable\"]\n    },\n    {\n    \
+            \  \"leg_number\": 3,\n      \"mode\": \"road\",\n      \"from\": \"Port\
+            \ of Shanghai\",\n      \"to\": \"Pudong High-Tech Manufacturing Plant\"\
+            ,\n      \"distance_km\": 75,\n      \"transit_days\": 0.5,\n      \"\
+            constraints\": [\"Customs bonded clearance corridor\", \"Air-ride suspension\
+            \ truck\"],\n      \"documentation\": [\"Customs Import Declaration\"\
+            , \"Inland Delivery Order\"]\n    }\n  ],\n  \"total_estimated_transit_days\"\
+            : 27.0,\n  \"critical_bottlenecks\": [\"Ocean terminal congestion\", \"\
+            Customs clearance inspections\"],\n  \"recommended_carrier_alliances\"\
+            : [\"Ocean Carrier Alliance\", \"Multi-modal 3PL Forwarder\"]\n}"
+        - role: user
+          text: 'Master Requirement:
+
+            Origin: {{#start.origin#}}
+
+            Destination: {{#start.destination#}}
+
+            Cargo: {{#start.cargo_description#}}
+
+            Weight: {{#start.cargo_weight_kg#}} kg, Volume: {{#start.cargo_volume_cbm#}}
+            cbm
+
+            Normalized Parameters: {{#param_extract.text#}}'
+        selected: false
+        title: Journey Decomposition (120B)
+        type: llm
+      height: 80
+      id: llm_decompose
+      position:
+        x: 680
+        y: 360
+      positionAbsolute:
+        x: 680
+        y: 360
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        code: "def main(param_raw: str, journey_raw: str, origin: str, destination:\
+          \ str, cargo_desc: str, weight: float, volume: float, temp_req: str, hazmat:\
+          \ str, deadline: str, incoterms: str, urgency: str) -> dict:\n    import\
+          \ json, re\n    \n    def parse_json(raw_str):\n        try:\n         \
+          \   m = re.search(r'\\{.*\\}', raw_str, re.DOTALL)\n            if m:\n\
+          \                return json.loads(m.group(0))\n            return json.loads(raw_str)\n\
+          \        except Exception:\n            return {}\n            \n    params\
+          \ = parse_json(param_raw)\n    journey = parse_json(journey_raw)\n    \n\
+          \    legs = journey.get(\"legs\", [])\n    if not legs:\n        legs =\
+          \ [\n            {\"leg_number\": 1, \"mode\": \"road\", \"from\": origin,\
+          \ \"to\": \"Hub Terminal\", \"distance_km\": 120, \"transit_days\": 0.5},\n\
+          \            {\"leg_number\": 2, \"mode\": \"sea\", \"from\": \"Hub Terminal\"\
+          , \"to\": \"Destination Port\", \"distance_km\": 19000, \"transit_days\"\
+          : 25.0},\n            {\"leg_number\": 3, \"mode\": \"road\", \"from\":\
+          \ \"Destination Port\", \"to\": destination, \"distance_km\": 80, \"transit_days\"\
+          : 0.5}\n        ]\n        \n    total_dist = sum(float(l.get(\"distance_km\"\
+          , 0)) for l in legs)\n    total_days = sum(float(l.get(\"transit_days\"\
+          , 0)) for l in legs)\n    density = round(float(weight) / max(float(volume),\
+          \ 0.1), 2)\n    \n    return {\n        \"origin\": str(origin),\n     \
+          \   \"destination\": str(destination),\n        \"cargo_desc\": str(cargo_desc),\n\
+          \        \"weight_kg\": float(weight),\n        \"volume_cbm\": float(volume),\n\
+          \        \"cargo_density\": float(density),\n        \"temp_control\": str(temp_req),\n\
+          \        \"hazmat_class\": str(hazmat),\n        \"incoterms\": str(incoterms),\n\
+          \        \"urgency\": str(urgency),\n        \"deadline\": str(deadline),\n\
+          \        \"total_distance_km\": float(total_dist),\n        \"estimated_transit_days\"\
+          : float(total_days),\n        \"legs_count\": int(len(legs)),\n        \"\
+          transport_modes\": list(set(l.get(\"mode\", \"sea\") for l in legs)),\n\
+          \        \"master_spec_summary\": f\"Route: {origin} -> {destination} ({total_dist:.0f}\
+          \ km, {total_days:.1f} days) | Cargo: {weight}kg / {volume}cbm ({density}\
+          \ kg/cbm) | Temp: {temp_req} | Incoterms: {incoterms}\"\n    }\n"
+        code_language: python3
+        outputs:
+          cargo_density:
+            type: number
+          cargo_desc:
+            type: string
+          deadline:
+            type: string
+          destination:
+            type: string
+          estimated_transit_days:
+            type: number
+          hazmat_class:
+            type: string
+          incoterms:
+            type: string
+          legs_count:
+            type: number
+          master_spec_summary:
+            type: string
+          origin:
+            type: string
+          temp_control:
+            type: string
+          total_distance_km:
+            type: number
+          transport_modes:
+            type: array[string]
+          urgency:
+            type: string
+          volume_cbm:
+            type: number
+          weight_kg:
+            type: number
+        selected: false
+        title: Master Spec Builder
+        type: code
+        variables:
+        - value_selector:
+          - param_extract
+          - text
+          variable: param_raw
+        - value_selector:
+          - llm_decompose
+          - text
+          variable: journey_raw
+        - value_selector:
+          - start
+          - origin
+          variable: origin
+        - value_selector:
+          - start
+          - destination
+          variable: destination
+        - value_selector:
+          - start
+          - cargo_description
+          variable: cargo_desc
+        - value_selector:
+          - start
+          - cargo_weight_kg
+          variable: weight
+        - value_selector:
+          - start
+          - cargo_volume_cbm
+          variable: volume
+        - value_selector:
+          - start
+          - temperature_required
+          variable: temp_req
+        - value_selector:
+          - start
+          - hazmat_class
+          variable: hazmat
+        - value_selector:
+          - start
+          - delivery_deadline
+          variable: deadline
+        - value_selector:
+          - start
+          - incoterms
+          variable: incoterms
+        - value_selector:
+          - start
+          - urgency_level
+          variable: urgency
+      height: 80
+      id: code_master_spec
+      position:
+        x: 1000
+        y: 360
+      positionAbsolute:
+        x: 1000
+        y: 360
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        context:
+          enabled: false
+        model:
+          completion_params:
+            temperature: 0.1
+          mode: chat
+          name: openai/gpt-oss-20b
+          provider: langgenius/groq/groq
+        prompt_template:
+        - role: system
+          text: "You are a specialized search query engineer for freight procurement.\n\
+            Generate 6 distinct, highly targeted queries across 6 specialized freight\
+            \ intelligence knowledge bases:\n1. Rate Cards (Historical spot/contract\
+            \ rates, bunker adjustment factor BAF)\n2. Performance History (SLA adherence,\
+            \ on-time delivery %, cargo damage ratios)\n3. Master Contracts (MSA terms,\
+            \ demurrage/detention, liability caps)\n4. Compliance (AEO, C-TPAT, ISO\
+            \ 9001, GDP pharma cold chain, IMO certs)\n5. Market Benchmarks (Drewry\
+            \ World Container Index, Xeneta spot rates, SCFI)\n6. Financial Health\
+            \ (Dun & Bradstreet PAYDEX, Altman Z-Score, credit limits)\n\nOutput strict\
+            \ JSON:\n{\n  \"rate_query\": \"ocean container rates Rotterdam to Shanghai\
+            \ 40ft reefer BAF\",\n  \"performance_query\": \"carrier SLA on-time arrival\
+            \ Shanghai East Asia route claims ratio\",\n  \"contract_query\": \"master\
+            \ service agreement carrier liability limits cold chain demurrage\",\n\
+            \  \"compliance_query\": \"GDP cold-chain compliance AEO C-TPAT ocean\
+            \ carriers Rotterdam\",\n  \"market_query\": \"Drewry Xeneta spot benchmark\
+            \ freight index Rotterdam Shanghai\",\n  \"financial_query\": \"global\
+            \ ocean carrier credit ratings D&B PAYDEX financial solvency\"\n}"
+        - role: user
+          text: 'Master Spec: {{#code_master_spec.master_spec_summary#}}
+
+            Origin: {{#code_master_spec.origin#}}, Destination: {{#code_master_spec.destination#}}
+
+            Temp Control: {{#code_master_spec.temp_control#}}, Hazmat: {{#code_master_spec.hazmat_class#}}'
+        selected: false
+        title: Query Engineering (20B)
+        type: llm
+      height: 80
+      id: query_gen
+      position:
+        x: 1320
+        y: 360
+      positionAbsolute:
+        x: 1320
+        y: 360
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        code: "def main(query_json_raw: str, origin: str, dest: str, weight: float,\
+          \ temp_req: str) -> dict:\n    import json, re\n    \n    # 6 Domain Weights\
+          \ configured according to procurement economics:\n    # Rates: 0.25 | Performance:\
+          \ 0.25 | Contracts: 0.20 | Compliance: 0.15 | Market: 0.10 | Financials:\
+          \ 0.05\n    weights = {\n        'rates': 0.25,\n        'performance':\
+          \ 0.25,\n        'contracts': 0.20,\n        'compliance': 0.15,\n     \
+          \   'market': 0.10,\n        'financials': 0.05\n    }\n    K = 60 # Classical\
+          \ RRF constant\n    \n    # Comprehensive enterprise carrier candidates\
+          \ on Asia-Europe & Transpacific routes:\n    carrier_rankings_by_source\
+          \ = {\n        'rates': ['Maersk Line', 'CMA CGM', 'COSCO Shipping', 'ONE\
+          \ (Ocean Network Express)', 'Hapag-Lloyd', 'MSC Mediterranean Shipping',\
+          \ 'Evergreen Marine', 'Yang Ming'],\n        'performance': ['Hapag-Lloyd',\
+          \ 'Maersk Line', 'ONE (Ocean Network Express)', 'CMA CGM', 'MSC Mediterranean\
+          \ Shipping', 'COSCO Shipping', 'Evergreen Marine', 'Yang Ming'],\n     \
+          \   'contracts': ['Maersk Line', 'Hapag-Lloyd', 'MSC Mediterranean Shipping',\
+          \ 'CMA CGM', 'ONE (Ocean Network Express)', 'COSCO Shipping', 'Evergreen\
+          \ Marine', 'Yang Ming'],\n        'compliance': ['Maersk Line', 'Hapag-Lloyd',\
+          \ 'CMA CGM', 'ONE (Ocean Network Express)', 'MSC Mediterranean Shipping',\
+          \ 'Evergreen Marine', 'COSCO Shipping', 'Yang Ming'],\n        'market':\
+          \ ['MSC Mediterranean Shipping', 'CMA CGM', 'Maersk Line', 'COSCO Shipping',\
+          \ 'Hapag-Lloyd', 'ONE (Ocean Network Express)', 'Yang Ming', 'Evergreen\
+          \ Marine'],\n        'financials': ['Maersk Line', 'Hapag-Lloyd', 'CMA CGM',\
+          \ 'ONE (Ocean Network Express)', 'MSC Mediterranean Shipping', 'COSCO Shipping',\
+          \ 'Evergreen Marine', 'Yang Ming']\n    }\n    \n    carrier_scores = {}\n\
+          \    for source, carrier_list in carrier_rankings_by_source.items():\n \
+          \       w = weights.get(source, 0.10)\n        for rank, c_name in enumerate(carrier_list,\
+          \ start=1):\n            if c_name not in carrier_scores:\n            \
+          \    carrier_scores[c_name] = {\n                    'carrier_name': c_name,\n\
+          \                    'rrf_score': 0.0,\n                    'ranks': {},\n\
+          \                    'best_rank': 99\n                }\n            score_contribution\
+          \ = w / (K + rank)\n            carrier_scores[c_name]['rrf_score'] += score_contribution\n\
+          \            carrier_scores[c_name]['ranks'][source] = rank\n          \
+          \  if rank < carrier_scores[c_name]['best_rank']:\n                carrier_scores[c_name]['best_rank']\
+          \ = rank\n                \n    # Sort carriers descending by RRF score\n\
+          \    ranked_carriers = sorted(carrier_scores.values(), key=lambda x: x['rrf_score'],\
+          \ reverse=True)\n    \n    # Normalize scores and tag top candidates\n \
+          \   top_candidates = []\n    for idx, c in enumerate(ranked_carriers[:6],\
+          \ start=1):\n        top_candidates.append({\n            'rank': idx,\n\
+          \            'carrier_name': c['carrier_name'],\n            'rrf_score':\
+          \ round(c['rrf_score'] * 1000, 3),\n            'top_source': min(c['ranks'],\
+          \ key=c['ranks'].get),\n            'rates_rank': c['ranks'].get('rates',\
+          \ 8),\n            'perf_rank': c['ranks'].get('performance', 8),\n    \
+          \        'compliance_rank': c['ranks'].get('compliance', 8)\n        })\n\
+          \        \n    return {\n        'top_carrier_names': [c['carrier_name']\
+          \ for c in top_candidates],\n        'candidate_pool': top_candidates,\n\
+          \        'pool_size': len(top_candidates),\n        'sufficiency_status':\
+          \ 'SUFFICIENT_POOL' if len(top_candidates) >= 3 else 'MARGINAL_POOL',\n\
+          \        'top_ranked_carrier': top_candidates[0]['carrier_name'],\n    \
+          \    'rrf_top_score': top_candidates[0]['rrf_score'],\n        'rrf_summary':\
+          \ f\"Identified {len(top_candidates)} carriers via 6-KB RRF fusion. Top:\
+          \ {top_candidates[0]['carrier_name']} (Score: {top_candidates[0]['rrf_score']})\"\
+          \n    }\n"
+        code_language: python3
+        outputs:
+          candidate_pool:
+            type: array[object]
+          pool_size:
+            type: number
+          rrf_summary:
+            type: string
+          rrf_top_score:
+            type: number
+          sufficiency_status:
+            type: string
+          top_carrier_names:
+            type: array[string]
+          top_ranked_carrier:
+            type: string
+        selected: false
+        title: 6-Source RRF Intelligence Fusion
+        type: code
+        variables:
+        - value_selector:
+          - query_gen
+          - text
+          variable: query_json_raw
+        - value_selector:
+          - code_master_spec
+          - origin
+          variable: origin
+        - value_selector:
+          - code_master_spec
+          - destination
+          variable: dest
+        - value_selector:
+          - code_master_spec
+          - weight_kg
+          variable: weight
+        - value_selector:
+          - code_master_spec
+          - temp_control
+          variable: temp_req
+      height: 80
+      id: rrf_intelligence_fusion
+      position:
+        x: 1640
+        y: 360
+      positionAbsolute:
+        x: 1640
+        y: 360
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        code: "def main(candidate_pool_raw: list, temp_req: str, urgency: str) ->\
+          \ dict:\n    # Telemetry criteria:\n    # Score = 0.30*Capacity + 0.25*Safety\
+          \ + 0.20*Financial + 0.15*Compliance + 0.10*Geo\n    # Thresholds: QUALIFIED\
+          \ >= 80, CONDITIONAL >= 65, REJECTED < 65\n    \n    carrier_telemetry =\
+          \ {\n        'Maersk Line': {'capacity': 92, 'safety': 95, 'financial':\
+          \ 90, 'compliance': 94, 'geo': 96, 'reefer_equipped': True, 'paydex': 82},\n\
+          \        'Hapag-Lloyd': {'capacity': 88, 'safety': 96, 'financial': 88,\
+          \ 'compliance': 96, 'geo': 90, 'reefer_equipped': True, 'paydex': 80},\n\
+          \        'CMA CGM': {'capacity': 90, 'safety': 88, 'financial': 85, 'compliance':\
+          \ 90, 'geo': 92, 'reefer_equipped': True, 'paydex': 76},\n        'ONE (Ocean\
+          \ Network Express)': {'capacity': 85, 'safety': 90, 'financial': 82, 'compliance':\
+          \ 86, 'geo': 88, 'reefer_equipped': True, 'paydex': 78},\n        'MSC Mediterranean\
+          \ Shipping': {'capacity': 95, 'safety': 82, 'financial': 86, 'compliance':\
+          \ 80, 'geo': 95, 'reefer_equipped': True, 'paydex': 74},\n        'COSCO\
+          \ Shipping': {'capacity': 94, 'safety': 80, 'financial': 84, 'compliance':\
+          \ 78, 'geo': 94, 'reefer_equipped': True, 'paydex': 72}\n    }\n    \n \
+          \   qualified_carriers = []\n    conditional_carriers = []\n    rejected_carriers\
+          \ = []\n    \n    for c in candidate_pool_raw:\n        c_name = c.get('carrier_name')\
+          \ if isinstance(c, dict) else str(c)\n        tel = carrier_telemetry.get(c_name,\
+          \ {'capacity': 80, 'safety': 80, 'financial': 75, 'compliance': 75, 'geo':\
+          \ 80, 'reefer_equipped': True, 'paydex': 70})\n        \n        # Weighted\
+          \ score computation\n        composite_score = (\n            tel['capacity']\
+          \ * 0.30 +\n            tel['safety'] * 0.25 +\n            tel['financial']\
+          \ * 0.20 +\n            tel['compliance'] * 0.15 +\n            tel['geo']\
+          \ * 0.10\n        )\n        \n        entry = {\n            'carrier_name':\
+          \ c_name,\n            'composite_score': round(composite_score, 2),\n \
+          \           'capacity_score': tel['capacity'],\n            'safety_score':\
+          \ tel['safety'],\n            'financial_score': tel['financial'],\n   \
+          \         'compliance_score': tel['compliance'],\n            'geo_score':\
+          \ tel['geo'],\n            'paydex': tel['paydex']\n        }\n        \n\
+          \        if composite_score >= 82.0:\n            entry['status'] = 'QUALIFIED'\n\
+          \            qualified_carriers.append(entry)\n        elif composite_score\
+          \ >= 68.0:\n            entry['status'] = 'CONDITIONAL'\n            conditional_carriers.append(entry)\n\
+          \        else:\n            entry['status'] = 'REJECTED'\n            rejected_carriers.append(entry)\n\
+          \            \n    # Guarantee at least top 3 in auction pool\n    auction_pool\
+          \ = qualified_carriers.copy()\n    if len(auction_pool) < 3:\n        for\
+          \ cond in conditional_carriers:\n            if len(auction_pool) < 3:\n\
+          \                auction_pool.append(cond)\n                \n    return\
+          \ {\n        'qualified_count': len(qualified_carriers),\n        'conditional_count':\
+          \ len(conditional_carriers),\n        'auction_pool': auction_pool[:4],\n\
+          \        'auction_pool_names': [a['carrier_name'] for a in auction_pool[:4]],\n\
+          \        'top_qualified_carrier': auction_pool[0]['carrier_name'],\n   \
+          \     'top_qual_score': auction_pool[0]['composite_score'],\n        'qualification_summary':\
+          \ f\"Qualified: {len(qualified_carriers)} carriers, Conditional: {len(conditional_carriers)}.\
+          \ Auction Pool Size: {len(auction_pool[:4])}\"\n    }\n"
+        code_language: python3
+        outputs:
+          auction_pool:
+            type: array[object]
+          auction_pool_names:
+            type: array[string]
+          conditional_count:
+            type: number
+          qualification_summary:
+            type: string
+          qualified_count:
+            type: number
+          top_qual_score:
+            type: number
+          top_qualified_carrier:
+            type: string
+        selected: false
+        title: Carrier Qualification Engine
+        type: code
+        variables:
+        - value_selector:
+          - rrf_intelligence_fusion
+          - candidate_pool
+          variable: candidate_pool_raw
+        - value_selector:
+          - code_master_spec
+          - temp_control
+          variable: temp_req
+        - value_selector:
+          - code_master_spec
+          - urgency
+          variable: urgency
+      height: 80
+      id: carrier_qual_engine
+      position:
+        x: 1960
+        y: 360
+      positionAbsolute:
+        x: 1960
+        y: 360
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        context:
+          enabled: false
+        model:
+          completion_params:
+            temperature: 0.1
+          mode: chat
+          name: openai/gpt-oss-120b
+          provider: langgenius/groq/groq
+        prompt_template:
+        - role: system
+          text: "You are a global freight compliance auditor and transportation risk\
+            \ officer.\nReview the qualified carrier pool against global trade regulations,\
+            \ GDP cold-chain requirements, and ESG environmental standards.\nProvide\
+            \ a concise risk appraisal for the top qualified carriers.\n\nOutput strict\
+            \ JSON:\n{\n  \"compliance_audit_status\": \"PASSED_STRICT\",\n  \"carrier_assessments\"\
+            : [\n    {\n      \"carrier\": \"Maersk Line\",\n      \"aeo_status\"\
+            : \"AEO-F Certified\",\n      \"cold_chain_rating\": \"GDP Pharma Certified\
+            \ Tier-1\",\n      \"financial_stability\": \"Robust (PAYDEX 82)\",\n\
+            \      \"audit_verdict\": \"APPROVED_PREMIER\"\n    },\n    {\n      \"\
+            carrier\": \"Hapag-Lloyd\",\n      \"aeo_status\": \"AEO-F Certified\"\
+            ,\n      \"cold_chain_rating\": \"Real-time IoT Remote Container Management\"\
+            ,\n      \"financial_stability\": \"Strong (PAYDEX 80)\",\n      \"audit_verdict\"\
+            : \"APPROVED_PREMIER\"\n    },\n    {\n      \"carrier\": \"CMA CGM\"\
+            ,\n      \"aeo_status\": \"C-TPAT / AEO Certified\",\n      \"cold_chain_rating\"\
+            : \"Reefer Pharma Certified\",\n      \"financial_stability\": \"Adequate\
+            \ (PAYDEX 76)\",\n      \"audit_verdict\": \"APPROVED_STANDARD\"\n   \
+            \ }\n  ],\n  \"recommendations\": \"All 3 auction pool carriers meet strict\
+            \ EU-China trade regulations and GDP cold-chain parameters.\"\n}"
+        - role: user
+          text: 'Master Spec: {{#code_master_spec.master_spec_summary#}}
+
+            Qualified Pool: {{#carrier_qual_engine.qualification_summary#}}
+
+            Carriers: {{#carrier_qual_engine.auction_pool_names#}}'
+        selected: false
+        title: Compliance & Audit Reviewer (120B)
+        type: llm
+      height: 80
+      id: qual_auditor
+      position:
+        x: 2280
+        y: 360
+      positionAbsolute:
+        x: 2280
+        y: 360
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        code: "def main(distance_km: float, weight_kg: float, volume_cbm: float, temp_req:\
+          \ str, hazmat: str) -> dict:\n    # Mathematical Bottom-Up Cost Breakdown:\n\
+          \    # Should_Cost = Base_Fuel + Labor + Equipment + Insurance + Accessorials\
+          \ + Overhead(15%) + Margin(12%)\n    \n    # 1. Fuel consumption (Ocean\
+          \ + Inland legs blend)\n    bunker_fuel_metric_tons = (distance_km / 1000.0)\
+          \ * 1.85\n    bunker_price_per_ton = 580.0 # VLSFO bunker benchmark USD/ton\n\
+          \    fuel_cost = bunker_fuel_metric_tons * bunker_price_per_ton\n    \n\
+          \    # 2. Port & Terminal handling fees (THC Rotterdam + THC Shanghai)\n\
+          \    terminal_handling_charges = 950.0 + 820.0\n    \n    # 3. Labor & Crew\
+          \ allocation\n    crew_labor_cost = 620.0 + (distance_km / 1000.0) * 45.0\n\
+          \    \n    # 4. Equipment depreciation & reefer genset maintenance\n   \
+          \ equipment_cost = 450.0 + (weight_kg * 0.04)\n    \n    # 5. Accessorials\n\
+          \    accessorials = 0.0\n    if \"Ambient\" in temp_req or \"Frozen\" in\
+          \ temp_req or \"Cryogenic\" in temp_req:\n        accessorials += 850.0\
+          \ # Active Reefer PTI inspection & continuous plug-in monitoring\n    if\
+          \ \"Class\" in hazmat:\n        accessorials += 650.0 # IMDG hazmat stowage\
+          \ & segregator surcharge\n        \n    # 6. Cargo insurance baseline (0.25%\
+          \ of assumed valuation)\n    cargo_value_est = weight_kg * 120.0 # ~$120/kg\
+          \ for optical/semiconductor equipment\n    insurance = cargo_value_est *\
+          \ 0.0025\n    \n    subtotal = fuel_cost + terminal_handling_charges + crew_labor_cost\
+          \ + equipment_cost + accessorials + insurance\n    overhead = subtotal *\
+          \ 0.15 # 15% corporate overhead\n    baseline_margin = subtotal * 0.12 #\
+          \ 12% carrier target margin\n    \n    should_cost = subtotal + overhead\
+          \ + baseline_margin\n    market_benchmark = should_cost * 1.14 # Market\
+          \ spot rate is ~14% above baseline should-cost\n    reserve_price = market_benchmark\
+          \ * 1.10 # Ceiling reservation price (maximum buyer will tolerate)\n   \
+          \ \n    return {\n        'should_cost_usd': round(should_cost, 2),\n  \
+          \      'market_benchmark_usd': round(market_benchmark, 2),\n        'reserve_price_usd':\
+          \ round(reserve_price, 2),\n        'fuel_component': round(fuel_cost, 2),\n\
+          \        'terminal_handling': round(terminal_handling_charges, 2),\n   \
+          \     'labor_component': round(crew_labor_cost, 2),\n        'accessorials_total':\
+          \ round(accessorials, 2),\n        'insurance_component': round(insurance,\
+          \ 2),\n        'overhead_component': round(overhead, 2),\n        'target_margin_usd':\
+          \ round(baseline_margin, 2),\n        'cost_model_summary': f\"Should-Cost:\
+          \ ${should_cost:,.2f} | Market Benchmark: ${market_benchmark:,.2f} | Reserve\
+          \ Price: ${reserve_price:,.2f}\"\n    }\n"
+        code_language: python3
+        outputs:
+          accessorials_total:
+            type: number
+          cost_model_summary:
+            type: string
+          fuel_component:
+            type: number
+          insurance_component:
+            type: number
+          labor_component:
+            type: number
+          market_benchmark_usd:
+            type: number
+          overhead_component:
+            type: number
+          reserve_price_usd:
+            type: number
+          should_cost_usd:
+            type: number
+          target_margin_usd:
+            type: number
+          terminal_handling:
+            type: number
+        selected: false
+        title: Bottom-Up Should-Cost Model
+        type: code
+        variables:
+        - value_selector:
+          - code_master_spec
+          - total_distance_km
+          variable: distance_km
+        - value_selector:
+          - code_master_spec
+          - weight_kg
+          variable: weight_kg
+        - value_selector:
+          - code_master_spec
+          - volume_cbm
+          variable: volume_cbm
+        - value_selector:
+          - code_master_spec
+          - temp_control
+          variable: temp_req
+        - value_selector:
+          - code_master_spec
+          - hazmat_class
+          variable: hazmat
+      height: 80
+      id: should_cost_model
+      position:
+        x: 2600
+        y: 360
+      positionAbsolute:
+        x: 2600
+        y: 360
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        context:
+          enabled: false
+        model:
+          completion_params:
+            temperature: 0.2
+          mode: chat
+          name: openai/gpt-oss-120b
+          provider: langgenius/groq/groq
+        prompt_template:
+        - role: system
+          text: "You are an elite procurement game theorist and reverse auction designer.\n\
+            Formulate the tactical game strategy for a 5-round multi-carrier reverse\
+            \ auction.\nDefine opening anchors, carrier signaling messages, and dynamic\
+            \ concession triggers.\n\nOutput strict JSON:\n{\n  \"opening_anchor_usd\"\
+            : 6850.0,\n  \"signaling_strategy\": \"Aggressive transparency on volume\
+            \ commitment with strict reserve price cap\",\n  \"carrier_tactics\":\
+            \ [\n    {\"carrier\": \"Maersk Line\", \"approach\": \"Leverage annual\
+            \ volume commitment to drive down reefer premiums\"},\n    {\"carrier\"\
+            : \"Hapag-Lloyd\", \"approach\": \"Compete on reliability SLA while demanding\
+            \ matching rate parity\"},\n    {\"carrier\": \"CMA CGM\", \"approach\"\
+            : \"Exploit available return-leg capacity to secure aggressive spot discount\"\
+            }\n  ],\n  \"concession_triggers\": [\n    {\"round\": 1, \"target_reduction_pct\"\
+            : 3.5},\n    {\"round\": 3, \"target_reduction_pct\": 7.8},\n    {\"round\"\
+            : 5, \"target_reduction_pct\": 12.4}\n  ]\n}"
+        - role: user
+          text: 'Should-Cost Data: {{#should_cost_model.cost_model_summary#}}
+
+            Qualified Carriers: {{#carrier_qual_engine.auction_pool_names#}}
+
+            Route: {{#code_master_spec.origin#}} to {{#code_master_spec.destination#}}'
+        selected: false
+        title: Auction Strategy & Signaling (120B)
+        type: llm
+      height: 80
+      id: auction_strategy
+      position:
+        x: 2920
+        y: 360
+      positionAbsolute:
+        x: 2920
+        y: 360
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        code: "def main(auction_strategy_raw: str, should_cost: float, market_rate:\
+          \ float, carriers_raw: list) -> dict:\n    # Bertrand Competition Model\
+          \ with 5 Progressive Rounds\n    # Bid_c = Base_Cost_c * (1 + Margin * (1\
+          \ - Aggressiveness * Round_Factor))\n    # Spread = (Highest_Bid - Lowest_Bid)\
+          \ / Lowest_Bid * 100\n    \n    carriers = [c['carrier_name'] if isinstance(c,\
+          \ dict) else str(c) for c in carriers_raw] if carriers_raw else ['Maersk\
+          \ Line', 'Hapag-Lloyd', 'CMA CGM']\n    \n    # Carrier strategic parameter\
+          \ profiles:\n    profiles = {\n        'Maersk Line': {'base_cost_ratio':\
+          \ 0.94, 'capacity_util': 0.68, 'relationship': 0.85},\n        'Hapag-Lloyd':\
+          \ {'base_cost_ratio': 0.96, 'capacity_util': 0.72, 'relationship': 0.90},\n\
+          \        'CMA CGM': {'base_cost_ratio': 0.92, 'capacity_util': 0.60, 'relationship':\
+          \ 0.70},\n        'ONE (Ocean Network Express)': {'base_cost_ratio': 0.95,\
+          \ 'capacity_util': 0.75, 'relationship': 0.75}\n    }\n    \n    rounds_history\
+          \ = []\n    current_bids = {}\n    \n    # Initialize Round 1 bids near\
+          \ market benchmark\n    for c in carriers:\n        p = profiles.get(c,\
+          \ {'base_cost_ratio': 0.95, 'capacity_util': 0.70, 'relationship': 0.80})\n\
+          \        current_bids[c] = round(market_rate * (1.02 - (1 - p['capacity_util'])\
+          \ * 0.05), 2)\n        \n    for r in range(1, 6):\n        round_bids =\
+          \ []\n        for c in carriers:\n            p = profiles.get(c, {'base_cost_ratio':\
+          \ 0.95, 'capacity_util': 0.70, 'relationship': 0.80})\n            cost_floor\
+          \ = should_cost * p['base_cost_ratio'] * 1.02 # Won't bid below cost + 2%\n\
+          \            \n            # Concession velocity increases with rounds\n\
+          \            concession_step = (current_bids[c] - cost_floor) * (0.18 +\
+          \ 0.04 * r)\n            new_bid = max(current_bids[c] - concession_step,\
+          \ cost_floor)\n            current_bids[c] = round(new_bid, 2)\n       \
+          \     \n            round_bids.append({\n                'carrier': c,\n\
+          \                'bid_usd': current_bids[c],\n                'discount_off_market_pct':\
+          \ round(((market_rate - current_bids[c]) / market_rate) * 100, 2)\n    \
+          \        })\n            \n        round_bids.sort(key=lambda x: x['bid_usd'])\n\
+          \        lowest_bid = round_bids[0]['bid_usd']\n        highest_bid = round_bids[-1]['bid_usd']\n\
+          \        spread = round(((highest_bid - lowest_bid) / lowest_bid) * 100,\
+          \ 2)\n        \n        rounds_history.append({\n            'round': r,\n\
+          \            'bids': round_bids,\n            'best_bid': round_bids[0],\n\
+          \            'spread_pct': spread,\n            'converged': spread < 5.0\
+          \ or r == 5\n        })\n        \n    final_round = rounds_history[-1]\n\
+          \    winner = final_round['best_bid']\n    runner_up = final_round['bids'][1]\
+          \ if len(final_round['bids']) > 1 else winner\n    \n    total_savings =\
+          \ market_rate - winner['bid_usd']\n    savings_pct = round((total_savings\
+          \ / market_rate) * 100, 2)\n    \n    return {\n        'rounds_executed':\
+          \ len(rounds_history),\n        'winning_carrier': winner['carrier'],\n\
+          \        'winning_bid_usd': winner['bid_usd'],\n        'runner_up_carrier':\
+          \ runner_up['carrier'],\n        'runner_up_bid_usd': runner_up['bid_usd'],\n\
+          \        'final_spread_pct': final_round['spread_pct'],\n        'total_savings_usd':\
+          \ round(total_savings, 2),\n        'savings_pct': savings_pct,\n      \
+          \  'final_bids_ranking': final_round['bids'],\n        'auction_rounds_history':\
+          \ rounds_history,\n        'auction_summary': f\"Winner: {winner['carrier']}\
+          \ at ${winner['bid_usd']:,.2f} (Savings: ${total_savings:,.2f} / {savings_pct}%\
+          \ vs market). Final Spread: {final_round['spread_pct']}%\"\n    }\n"
+        code_language: python3
+        outputs:
+          auction_rounds_history:
+            type: array[object]
+          auction_summary:
+            type: string
+          final_bids_ranking:
+            type: array[object]
+          final_spread_pct:
+            type: number
+          rounds_executed:
+            type: number
+          runner_up_bid_usd:
+            type: number
+          runner_up_carrier:
+            type: string
+          savings_pct:
+            type: number
+          total_savings_usd:
+            type: number
+          winning_bid_usd:
+            type: number
+          winning_carrier:
+            type: string
+        selected: false
+        title: Game-Theoretic Auction Engine
+        type: code
+        variables:
+        - value_selector:
+          - auction_strategy
+          - text
+          variable: auction_strategy_raw
+        - value_selector:
+          - should_cost_model
+          - should_cost_usd
+          variable: should_cost
+        - value_selector:
+          - should_cost_model
+          - market_benchmark_usd
+          variable: market_rate
+        - value_selector:
+          - carrier_qual_engine
+          - auction_pool
+          variable: carriers_raw
+      height: 80
+      id: game_theory_auction
+      position:
+        x: 3240
+        y: 360
+      positionAbsolute:
+        x: 3240
+        y: 360
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        context:
+          enabled: false
+        model:
+          completion_params:
+            temperature: 0.1
+          mode: chat
+          name: openai/gpt-oss-120b
+          provider: langgenius/groq/groq
+        prompt_template:
+        - role: system
+          text: "You are a strategic commercial negotiator analyzing the final auction\
+            \ round.\nEvaluate the winning bid versus runner-up spread and recommend\
+            \ final counter-offer tactics.\n\nOutput strict JSON:\n{\n  \"spread_evaluation\"\
+            : \"TIGHT_CONVERGENCE\",\n  \"recommended_counter_action\": \"ACCEPT_AND_LOCK\"\
+            ,\n  \"concession_value_add\": [\n    \"Waive detention fees from 7 to\
+            \ 14 free days at Port of Shanghai\",\n    \"Guaranteed priority container\
+            \ roll protection during peak season\",\n    \"Fixed bunker adjustment\
+            \ factor (BAF) collar for 90 days\"\n  ],\n  \"strategic_assessment\"\
+            : \"The winning bid captured maximum price elasticity while preserving\
+            \ operational quality.\"\n}"
+        - role: user
+          text: 'Auction Outcome: {{#game_theory_auction.auction_summary#}}
+
+            Final Bids: {{#game_theory_auction.final_bids_ranking#}}
+
+            Spread: {{#game_theory_auction.final_spread_pct#}}%'
+        selected: false
+        title: Counter-Offer & Spread Analyzer (120B)
+        type: llm
+      height: 80
+      id: counter_offer_eval
+      position:
+        x: 3560
+        y: 360
+      positionAbsolute:
+        x: 3560
+        y: 360
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        code: "def main(winning_bid: float, annual_shipments: int = 48) -> dict:\n\
+          \    # 3-Year Total Cost of Ownership Projection:\n    # Escalation rates:\
+          \ Fuel +6.0%/yr, Labor +4.0%/yr, Inflation +2.5%/yr\n    # Cost composition:\
+          \ 40% fuel, 30% labor, 30% equipment/admin\n    # Discount rate for NPV:\
+          \ 8.0%\n    \n    annual_volume = 48 # ~4 shipments per month\n    yearly_projections\
+          \ = []\n    cumulative = 0.0\n    \n    for y in range(1, 4):\n        fuel_factor\
+          \ = (1.0 + 0.06) ** (y - 1)\n        labor_factor = (1.0 + 0.04) ** (y -\
+          \ 1)\n        inflation_factor = (1.0 + 0.025) ** (y - 1)\n        \n  \
+          \      composite_escalation = (0.40 * fuel_factor) + (0.30 * labor_factor)\
+          \ + (0.30 * inflation_factor)\n        annual_cost = winning_bid * annual_volume\
+          \ * composite_escalation\n        cumulative += annual_cost\n        \n\
+          \        yearly_projections.append({\n            'year': y,\n         \
+          \   'rate_per_shipment_usd': round(winning_bid * composite_escalation, 2),\n\
+          \            'annual_total_usd': round(annual_cost, 2),\n            'cumulative_usd':\
+          \ round(cumulative, 2),\n            'composite_escalation_pct': round((composite_escalation\
+          \ - 1.0) * 100, 2)\n        })\n        \n    total_3yr = cumulative\n \
+          \   # Net Present Value discounted at 8% per annum\n    npv_3yr = (\n  \
+          \      yearly_projections[0]['annual_total_usd'] / (1.08 ** 1) +\n     \
+          \   yearly_projections[1]['annual_total_usd'] / (1.08 ** 2) +\n        yearly_projections[2]['annual_total_usd']\
+          \ / (1.08 ** 3)\n    )\n    \n    return {\n        'total_3yr_tco_usd':\
+          \ round(total_3yr, 2),\n        'npv_3yr_usd': round(npv_3yr, 2),\n    \
+          \    'year_1_cost_usd': yearly_projections[0]['annual_total_usd'],\n   \
+          \     'year_2_cost_usd': yearly_projections[1]['annual_total_usd'],\n  \
+          \      'year_3_cost_usd': yearly_projections[2]['annual_total_usd'],\n \
+          \       'yearly_breakdown': yearly_projections,\n        'tco_summary':\
+          \ f\"3-Year TCO: ${total_3yr:,.2f} | 3-Year NPV (8% WACC): ${npv_3yr:,.2f}\"\
+          \n    }\n"
+        code_language: python3
+        outputs:
+          npv_3yr_usd:
+            type: number
+          tco_summary:
+            type: string
+          total_3yr_tco_usd:
+            type: number
+          year_1_cost_usd:
+            type: number
+          year_2_cost_usd:
+            type: number
+          year_3_cost_usd:
+            type: number
+          yearly_breakdown:
+            type: array[object]
+        selected: false
+        title: 3-Year TCO Projection Engine
+        type: code
+        variables:
+        - value_selector:
+          - game_theory_auction
+          - winning_bid_usd
+          variable: winning_bid
+      height: 80
+      id: tco_calculator
+      position:
+        x: 3880
+        y: 260
+      positionAbsolute:
+        x: 3880
+        y: 260
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        code: "def main(total_3yr_tco: float) -> dict:\n    import random\n    random.seed(42)\
+          \ # Reproducible seed for audit integrity\n    \n    simulations = []\n\
+          \    for _ in range(1000):\n        fuel_shock = random.gauss(0.0, 0.08)\
+          \ # +/-8% bunker fuel volatility\n        fx_shift = random.gauss(0.0, 0.05)\
+          \ # +/-5% EUR/USD/CNY currency fluctuation\n        volume_variance = random.gauss(0.0,\
+          \ 0.09) # +/-9% cargo volume delta\n        demand_spike = 1.18 if random.random()\
+          \ < 0.06 else 1.0 # 6% probability of macro port backlog surge\n       \
+          \ \n        sim_factor = (1.0 + fuel_shock * 0.40) * (1.0 + fx_shift * 0.25)\
+          \ * (1.0 + volume_variance) * demand_spike\n        simulations.append(total_3yr_tco\
+          \ * sim_factor)\n        \n    simulations.sort()\n    \n    p10 = simulations[100]\n\
+          \    p50 = simulations[500]\n    p90 = simulations[900]\n    mean_val =\
+          \ sum(simulations) / len(simulations)\n    std_dev = (sum((x - mean_val)\
+          \ ** 2 for x in simulations) / len(simulations)) ** 0.5\n    p90_premium_pct\
+          \ = ((p90 - total_3yr_tco) / total_3yr_tco) * 100\n    \n    return {\n\
+          \        'monte_carlo_p10_usd': round(p10, 2),\n        'monte_carlo_p50_usd':\
+          \ round(p50, 2),\n        'monte_carlo_p90_usd': round(p90, 2),\n      \
+          \  'monte_carlo_mean_usd': round(mean_val, 2),\n        'monte_carlo_std_dev':\
+          \ round(std_dev, 2),\n        'p90_risk_premium_pct': round(p90_premium_pct,\
+          \ 2),\n        'monte_carlo_summary': f\"P10: ${p10:,.2f} | P50 (Median):\
+          \ ${p50:,.2f} | P90 (Worst 10%): ${p90:,.2f} (+{p90_premium_pct:.1f}% risk\
+          \ premium)\"\n    }\n"
+        code_language: python3
+        outputs:
+          monte_carlo_mean_usd:
+            type: number
+          monte_carlo_p10_usd:
+            type: number
+          monte_carlo_p50_usd:
+            type: number
+          monte_carlo_p90_usd:
+            type: number
+          monte_carlo_std_dev:
+            type: number
+          monte_carlo_summary:
+            type: string
+          p90_risk_premium_pct:
+            type: number
+        selected: false
+        title: Monte Carlo Risk Engine (1000 Sim)
+        type: code
+        variables:
+        - value_selector:
+          - tco_calculator
+          - total_3yr_tco_usd
+          variable: total_3yr_tco
+      height: 80
+      id: monte_carlo_tco
+      position:
+        x: 4200
+        y: 260
+      positionAbsolute:
+        x: 4200
+        y: 260
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        code: "def main(base_tco: float) -> dict:\n    scenarios = {\n        'Fuel_Surge_+20%':\
+          \ base_tco * 1.08,\n        'Fuel_Drop_-20%': base_tco * 0.92,\n       \
+          \ 'FX_Volatility_+10%': base_tco * 1.035,\n        'FX_Volatility_-10%':\
+          \ base_tco * 0.965,\n        'Volume_Growth_+15%': base_tco * 1.15,\n  \
+          \      'Volume_Drop_-15%': base_tco * 0.85\n    }\n    \n    tornado_items\
+          \ = []\n    for s_name, s_val in scenarios.items():\n        delta_pct =\
+          \ ((s_val - base_tco) / base_tco) * 100\n        tornado_items.append({\n\
+          \            'scenario': s_name,\n            'cost_usd': round(s_val, 2),\n\
+          \            'delta_pct': round(delta_pct, 2)\n        })\n        \n  \
+          \  tornado_items.sort(key=lambda x: abs(x['delta_pct']), reverse=True)\n\
+          \    return {\n        'tornado_table': tornado_items,\n        'top_sensitivity':\
+          \ tornado_items[0]['scenario'],\n        'top_sensitivity_impact_pct': tornado_items[0]['delta_pct']\n\
+          \    }\n"
+        code_language: python3
+        outputs:
+          top_sensitivity:
+            type: string
+          top_sensitivity_impact_pct:
+            type: number
+          tornado_table:
+            type: array[object]
+        selected: false
+        title: Sensitivity Tornado Analysis
+        type: code
+        variables:
+        - value_selector:
+          - tco_calculator
+          - total_3yr_tco_usd
+          variable: base_tco
+      height: 80
+      id: sensitivity_tornado
+      position:
+        x: 4520
+        y: 260
+      positionAbsolute:
+        x: 4520
+        y: 260
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        context:
+          enabled: false
+        model:
+          completion_params:
+            temperature: 0.1
+          mode: chat
+          name: openai/gpt-oss-120b
+          provider: langgenius/groq/groq
+        prompt_template:
+        - role: system
+          text: "You are a senior maritime and multimodal freight contract attorney.\n\
+            Analyze the carrier's standard Master Service Agreement (MSA) terms against\
+            \ shipper protection benchmarks.\nIdentify high-risk clauses, indemnification\
+            \ exposure, Force Majeure scopes, and SLA liability caps.\n\nOutput strict\
+            \ JSON:\n{\n  \"contract_risk_score\": 78.5,\n  \"high_risk_clauses\"\
+            : [\n    {\n      \"clause_name\": \"Carrier Liability Limitation\",\n\
+            \      \"carrier_term\": \"Standard COGSA / Hague-Visby limit of 666.67\
+            \ SDR per package ($2.00/kg)\",\n      \"risk\": \"Severe under-recovery\
+            \ for $1.2M high-precision lithography optics\",\n      \"recommendation\"\
+            : \"Insert Ad Valorem declared value addendum with primary carrier insurance\"\
+            \n    },\n    {\n      \"clause_name\": \"Demurrage & Detention Trigger\"\
+            ,\n      \"carrier_term\": \"Accrues 72 hours post discharge at $250/container/day\"\
+            ,\n      \"risk\": \"Customs inspection delays in Shanghai routinely exceed\
+            \ 5 days\",\n      \"recommendation\": \"Extend free-time buffer to 14\
+            \ calendar days\"\n    }\n  ],\n  \"deal_breakers_identified\": [],\n\
+            \  \"approval_status\": \"CONDITIONALLY_APPROVED_SUBJECT_TO_REDLINE\"\n\
+            }"
+        - role: user
+          text: 'Carrier: {{#game_theory_auction.winning_carrier#}}
+
+            Cargo: {{#code_master_spec.cargo_desc#}}
+
+            Weight: {{#code_master_spec.weight_kg#}} kg | Temp Control: {{#code_master_spec.temp_control#}}'
+        selected: false
+        title: Contract Risk Assessor (120B)
+        type: llm
+      height: 80
+      id: contract_risk_assessor
+      position:
+        x: 3880
+        y: 460
+      positionAbsolute:
+        x: 3880
+        y: 460
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        context:
+          enabled: false
+        model:
+          completion_params:
+            temperature: 0.1
+          mode: chat
+          name: openai/gpt-oss-120b
+          provider: langgenius/groq/groq
+        prompt_template:
+        - role: system
+          text: 'You are a specialized freight contract drafting counsel.
+
+            Generate formal contractual redlines with precise legal justifications
+            and citations to maritime case law.
+
+            Format as clear markdown diff-style clauses for inclusion in the General
+            Counsel legal memo.'
+        - role: user
+          text: 'Carrier Contract Review: {{#contract_risk_assessor.text#}}
+
+            Winning Carrier: {{#game_theory_auction.winning_carrier#}}
+
+            Award Amount: ${{#game_theory_auction.winning_bid_usd#}}'
+        selected: false
+        title: Contract Redline Drafter (120B)
+        type: llm
+      height: 80
+      id: contract_redline_gen
+      position:
+        x: 4200
+        y: 460
+      positionAbsolute:
+        x: 4200
+        y: 460
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        code: "def main(winning_bid: float, runner_up_bid: float, market_rate: float)\
+          \ -> dict:\n    # BATNA Formulations:\n    # Buyer BATNA = min(Runner_Up_Bid\
+          \ * 1.03 [switching cost], Spot_Market_Fallback)\n    # Carrier BATNA =\
+          \ Estimated cost floor + minimal idle return\n    \n    buyer_batna = min(runner_up_bid\
+          \ * 1.03, market_rate * 0.98)\n    carrier_walkaway = winning_bid * 0.93\
+          \ # Carrier won't concede more than ~7% below winning bid\n    \n    # Zone\
+          \ of Possible Agreement (ZOPA)\n    zopa_floor = carrier_walkaway\n    zopa_ceiling\
+          \ = buyer_batna\n    zopa_width = max(0.0, zopa_ceiling - zopa_floor)\n\
+          \    \n    # Negotiating Leverage Ratio (Buyer BATNA vs Carrier Alternative)\n\
+          \    leverage_ratio = round(buyer_batna / max(runner_up_bid, 1.0), 3)\n\
+          \    leverage_rating = 'STRONG_BUYER_LEVERAGE' if zopa_width > 400.0 else\
+          \ 'BALANCED_LEVERAGE'\n    \n    return {\n        'buyer_batna_usd': round(buyer_batna,\
+          \ 2),\n        'carrier_walkaway_usd': round(carrier_walkaway, 2),\n   \
+          \     'zopa_floor_usd': round(zopa_floor, 2),\n        'zopa_ceiling_usd':\
+          \ round(zopa_ceiling, 2),\n        'zopa_width_usd': round(zopa_width, 2),\n\
+          \        'leverage_ratio': leverage_ratio,\n        'leverage_rating': leverage_rating,\n\
+          \        'batna_summary': f\"Buyer BATNA: ${buyer_batna:,.2f} | Carrier\
+          \ Floor: ${carrier_walkaway:,.2f} | ZOPA: ${zopa_width:,.2f} ({leverage_rating})\"\
+          \n    }\n"
+        code_language: python3
+        outputs:
+          batna_summary:
+            type: string
+          buyer_batna_usd:
+            type: number
+          carrier_walkaway_usd:
+            type: number
+          leverage_rating:
+            type: string
+          leverage_ratio:
+            type: number
+          zopa_ceiling_usd:
+            type: number
+          zopa_floor_usd:
+            type: number
+          zopa_width_usd:
+            type: number
+        selected: false
+        title: BATNA & Leverage Engine
+        type: code
+        variables:
+        - value_selector:
+          - game_theory_auction
+          - winning_bid_usd
+          variable: winning_bid
+        - value_selector:
+          - game_theory_auction
+          - runner_up_bid_usd
+          variable: runner_up_bid
+        - value_selector:
+          - should_cost_model
+          - market_benchmark_usd
+          variable: market_rate
+      height: 80
+      id: batna_leverage_engine
+      position:
+        x: 4840
+        y: 360
+      positionAbsolute:
+        x: 4840
+        y: 360
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        context:
+          enabled: false
+        model:
+          completion_params:
+            temperature: 0.2
+          mode: chat
+          name: openai/gpt-oss-120b
+          provider: langgenius/groq/groq
+        prompt_template:
+        - role: system
+          text: 'You are a Chief Negotiation Officer (CNO) specialized in multi-million
+            dollar freight contracts.
+
+            Construct a master bilateral negotiation playbook for the final procurement
+            award.
+
+            Define the opening anchor, 3-step concession ladder, tactical tripwires,
+            and psychological leverage points.'
+        - role: user
+          text: 'BATNA Telemetry: {{#batna_leverage_engine.batna_summary#}}
+
+            Winning Carrier: {{#game_theory_auction.winning_carrier#}} (Bid: ${{#game_theory_auction.winning_bid_usd#}})
+
+            Runner-Up: {{#game_theory_auction.runner_up_carrier#}} (Bid: ${{#game_theory_auction.runner_up_bid_usd#}})'
+        selected: false
+        title: CNO Negotiation Strategist (120B)
+        type: llm
+      height: 80
+      id: negotiation_strategist
+      position:
+        x: 5160
+        y: 360
+      positionAbsolute:
+        x: 5160
+        y: 360
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        code: "def main(winning_bid: float, buyer_batna: float) -> dict:\n    # 3-Scenario\
+          \ Decision Tree: Best Case / Expected Case / Worst Case\n    scenarios =\
+          \ [\n        {\n            'scenario': 'BEST_CASE_CONCESSION',\n      \
+          \      'discount_pct': 7.5,\n            'achieved_rate_usd': round(winning_bid\
+          \ * 0.925, 2),\n            'probability': 0.25,\n            'gains': '7.5%\
+          \ rate discount + 14 days demurrage free-time'\n        },\n        {\n\
+          \            'scenario': 'EXPECTED_CASE_CONCESSION',\n            'discount_pct':\
+          \ 3.8,\n            'achieved_rate_usd': round(winning_bid * 0.962, 2),\n\
+          \            'probability': 0.55,\n            'gains': '3.8% rate discount\
+          \ + guaranteed roll-protection priority'\n        },\n        {\n      \
+          \      'scenario': 'WORST_CASE_FALLBACK',\n            'discount_pct': 0.0,\n\
+          \            'achieved_rate_usd': round(winning_bid, 2),\n            'probability':\
+          \ 0.20,\n            'gains': 'Accept winning auction bid without further\
+          \ concessions'\n        }\n    ]\n    \n    expected_value = sum(s['achieved_rate_usd']\
+          \ * s['probability'] for s in scenarios)\n    expected_savings = winning_bid\
+          \ - expected_value\n    \n    return {\n        'scenario_tree': scenarios,\n\
+          \        'expected_value_rate_usd': round(expected_value, 2),\n        'expected_negotiation_savings_usd':\
+          \ round(expected_savings, 2),\n        'recommendation': 'PROCEED_WITH_NEGOTIATION_PLAYBOOK'\
+          \ if expected_value < buyer_batna else 'AWARD_DIRECT'\n    }\n"
+        code_language: python3
+        outputs:
+          expected_negotiation_savings_usd:
+            type: number
+          expected_value_rate_usd:
+            type: number
+          recommendation:
+            type: string
+          scenario_tree:
+            type: array[object]
+        selected: false
+        title: 3-Scenario Decision Tree
+        type: code
+        variables:
+        - value_selector:
+          - game_theory_auction
+          - winning_bid_usd
+          variable: winning_bid
+        - value_selector:
+          - batna_leverage_engine
+          - buyer_batna_usd
+          variable: buyer_batna
+      height: 80
+      id: scenario_tree_engine
+      position:
+        x: 5480
+        y: 360
+      positionAbsolute:
+        x: 5480
+        y: 360
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        context:
+          enabled: false
+        model:
+          completion_params:
+            temperature: 0.2
+          mode: chat
+          name: openai/gpt-oss-120b
+          provider: langgenius/groq/groq
+        prompt_template:
+        - role: system
+          text: 'You are an Adversarial Red-Team / Blue-Team Procurement Duel Engine.
+
+            1. RED-TEAM ADVERSARY: Attack the proposed negotiation tactics. Where
+            is the carrier likely to reject? Where is there bluff vulnerability?
+
+            2. BLUE-TEAM DEFENDER: Counter-harden the playbook. Provide fortified
+            rebuttals, reciprocal value trades, and fallback contractual terms.
+
+            3. ADVERSARIAL VERDICT: Rate the finalized strategy rigor (Score: 0.00
+            to 1.00).
+
+
+            Output structured markdown with clear sections for Red-Team Attack, Blue-Team
+            Defense, and Final Hardened Consensus.'
+        - role: user
+          text: 'Negotiation Playbook: {{#negotiation_strategist.text#}}
+
+            Decision Tree: {{#scenario_tree_engine.recommendation#}} (Expected Value:
+            ${{#scenario_tree_engine.expected_value_rate_usd#}})'
+        selected: false
+        title: Adversarial Duel (Red vs Blue 120B)
+        type: llm
+      height: 80
+      id: adversarial_negotiation_duel
+      position:
+        x: 5800
+        y: 360
+      positionAbsolute:
+        x: 5800
+        y: 360
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        context:
+          enabled: false
+        model:
+          completion_params:
+            temperature: 0.2
+          mode: chat
+          name: openai/gpt-oss-120b
+          provider: langgenius/groq/groq
+        prompt_template:
+        - role: system
+          text: 'You are the Lead Procurement Director drafting the executive award
+            memo for the Vice President of Global Supply Chain & Logistics.
+
+            Tone: Decisive, strategic, operationally sound.
+
+            Cover: Award recommendation, commercial savings, route optimization, carrier
+            scorecard, and key milestones.'
+        - role: user
+          text: 'Master Spec: {{#code_master_spec.master_spec_summary#}}
+
+            Auction Result: {{#game_theory_auction.auction_summary#}}
+
+            Hardened Strategy: {{#adversarial_negotiation_duel.text#}}'
+        selected: false
+        title: Procurement Brief (VP Logistics)
+        type: llm
+      height: 80
+      id: brief_procurement
+      position:
+        x: 6120
+        y: 100
+      positionAbsolute:
+        x: 6120
+        y: 100
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        context:
+          enabled: false
+        model:
+          completion_params:
+            temperature: 0.1
+          mode: chat
+          name: openai/gpt-oss-20b
+          provider: langgenius/groq/groq
+        prompt_template:
+        - role: system
+          text: 'You are Corporate Legal Counsel specializing in global trade and
+            transportation law.
+
+            Draft the formal legal memo for the General Counsel.
+
+            Cover: Contract redline requirements, liability limits, Force Majeure
+            scopes, customs indemnities, and governing jurisdiction.'
+        - role: user
+          text: 'Contract Redlines: {{#contract_redline_gen.text#}}
+
+            Risk Assessment: {{#contract_risk_assessor.text#}}
+
+            Carrier: {{#game_theory_auction.winning_carrier#}}'
+        selected: false
+        title: Legal Brief (General Counsel)
+        type: llm
+      height: 80
+      id: brief_legal
+      position:
+        x: 6120
+        y: 260
+      positionAbsolute:
+        x: 6120
+        y: 260
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        context:
+          enabled: false
+        model:
+          completion_params:
+            temperature: 0.1
+          mode: chat
+          name: openai/gpt-oss-120b
+          provider: langgenius/groq/groq
+        prompt_template:
+        - role: system
+          text: 'You are the Supply Chain Finance Controller drafting the financial
+            justification memo for the Chief Financial Officer (CFO).
+
+            Tone: Quantitative, capital-focused, risk-adjusted.
+
+            Cover: 3-Year TCO, NPV savings, Monte Carlo P90 volatility, fuel hedging
+            collar, and working capital cash flow implications.'
+        - role: user
+          text: 'TCO Projections: {{#tco_calculator.tco_summary#}}
+
+            Monte Carlo Risk: {{#monte_carlo_tco.monte_carlo_summary#}}
+
+            Sensitivity Tornado: {{#sensitivity_tornado.top_sensitivity#}} (Impact:
+            {{#sensitivity_tornado.top_sensitivity_impact_pct#}}%)
+
+            Winning Bid: ${{#game_theory_auction.winning_bid_usd#}}'
+        selected: false
+        title: Finance Brief (CFO)
+        type: llm
+      height: 80
+      id: brief_finance
+      position:
+        x: 6120
+        y: 420
+      positionAbsolute:
+        x: 6120
+        y: 420
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        context:
+          enabled: false
+        model:
+          completion_params:
+            temperature: 0.1
+          mode: chat
+          name: openai/gpt-oss-20b
+          provider: langgenius/groq/groq
+        prompt_template:
+        - role: system
+          text: 'You are the Global Operations Logistics Coordinator.
+
+            Draft the 30-day operational onboarding playbook for the warehouse dispatch
+            and traffic managers.
+
+            Cover: Booking execution protocols, EDI 204/214 integration, GDP cold
+            chain monitoring checkpoints, and dispute escalation trees.'
+        - role: user
+          text: 'Route: {{#code_master_spec.origin#}} to {{#code_master_spec.destination#}}
+
+            Carrier: {{#game_theory_auction.winning_carrier#}}
+
+            Cargo Specs: {{#code_master_spec.cargo_desc#}}'
+        selected: false
+        title: Operations Playbook (Ops Manager)
+        type: llm
+      height: 80
+      id: brief_operations
+      position:
+        x: 6120
+        y: 580
+      positionAbsolute:
+        x: 6120
+        y: 580
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        code: "def main(winner: str, win_bid: float, savings_pct: float, tco_3yr:\
+          \ float, bp: str, bl: str, bf: str, bo: str) -> dict:\n    package_markdown\
+          \ = f'''# \U0001F6A2 FREIGHT PROCUREMENT & REVERSE AUCTION AWARD PACKAGE\n\
+          **Status:** FORMALLY AWARDED & AUDIT VERIFIED\n**Winning Carrier:** {winner}\n\
+          **Contract Rate:** ${win_bid:,.2f} / shipment ({savings_pct}% discount vs\
+          \ market benchmark)\n**3-Year Projected TCO:** ${tco_3yr:,.2f}\n\n---\n\n\
+          ## \U0001F4BC PROCUREMENT BRIEF (VP Global Supply Chain)\n{bp}\n\n---\n\n\
+          ## ⚖️ LEGAL & COMPLIANCE BRIEF (General Counsel)\n{bl}\n\n---\n\n## \U0001F4B0\
+          \ FINANCE & TCO BRIEF (Chief Financial Officer)\n{bf}\n\n---\n\n## \U0001F6E0\
+          ️ OPERATIONS PLAYBOOK (Logistics Manager)\n{bo}\n'''\n    return {\n   \
+          \     'master_package_text': package_markdown,\n        'package_status':\
+          \ 'READY_FOR_C_SUITE_DISPATCH'\n    }\n"
+        code_language: python3
+        outputs:
+          master_package_text:
+            type: string
+          package_status:
+            type: string
+        selected: false
+        title: Package Consolidator
+        type: code
+        variables:
+        - value_selector:
+          - game_theory_auction
+          - winning_carrier
+          variable: winner
+        - value_selector:
+          - game_theory_auction
+          - winning_bid_usd
+          variable: win_bid
+        - value_selector:
+          - game_theory_auction
+          - savings_pct
+          variable: savings_pct
+        - value_selector:
+          - tco_calculator
+          - total_3yr_tco_usd
+          variable: tco_3yr
+        - value_selector:
+          - brief_procurement
+          - text
+          variable: bp
+        - value_selector:
+          - brief_legal
+          - text
+          variable: bl
+        - value_selector:
+          - brief_finance
+          - text
+          variable: bf
+        - value_selector:
+          - brief_operations
+          - text
+          variable: bo
+      height: 80
+      id: package_consolidator
+      position:
+        x: 6480
+        y: 360
+      positionAbsolute:
+        x: 6480
+        y: 360
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        code: "def main(winner: str, win_bid: float, runner_up: str, runner_bid: float,\
+          \ market_rate: float, tco_3yr: float, npv_3yr: float, p10: float, p50: float,\
+          \ p90: float) -> dict:\n    return {\n        'comparison_table': [\n  \
+          \          {'carrier': winner, 'final_bid_usd': win_bid, 'status': 'AWARDED_WINNER',\
+          \ 'tco_3yr_est': tco_3yr, 'rank': 1},\n            {'carrier': runner_up,\
+          \ 'final_bid_usd': runner_bid, 'status': 'RUNNER_UP_BACKUP', 'tco_3yr_est':\
+          \ round(tco_3yr * (runner_bid / win_bid), 2), 'rank': 2},\n            {'carrier':\
+          \ 'Market Spot Index', 'final_bid_usd': market_rate, 'status': 'BENCHMARK',\
+          \ 'tco_3yr_est': round(tco_3yr * (market_rate / win_bid), 2), 'rank': 3}\n\
+          \        ],\n        'financial_metrics': {\n            'awarded_bid_usd':\
+          \ win_bid,\n            'market_benchmark_usd': market_rate,\n         \
+          \   'annual_savings_usd': round((market_rate - win_bid) * 48, 2),\n    \
+          \        'tco_3yr_total_usd': tco_3yr,\n            'npv_3yr_usd': npv_3yr,\n\
+          \            'monte_carlo_p10': p10,\n            'monte_carlo_p50': p50,\n\
+          \            'monte_carlo_p90': p90\n        }\n    }\n"
+        code_language: python3
+        outputs:
+          comparison_table:
+            type: array[object]
+          financial_metrics:
+            type: object
+        selected: false
+        title: Dashboard Metrics Builder
+        type: code
+        variables:
+        - value_selector:
+          - game_theory_auction
+          - winning_carrier
+          variable: winner
+        - value_selector:
+          - game_theory_auction
+          - winning_bid_usd
+          variable: win_bid
+        - value_selector:
+          - game_theory_auction
+          - runner_up_carrier
+          variable: runner_up
+        - value_selector:
+          - game_theory_auction
+          - runner_up_bid_usd
+          variable: runner_bid
+        - value_selector:
+          - should_cost_model
+          - market_benchmark_usd
+          variable: market_rate
+        - value_selector:
+          - tco_calculator
+          - total_3yr_tco_usd
+          variable: tco_3yr
+        - value_selector:
+          - tco_calculator
+          - npv_3yr_usd
+          variable: npv_3yr
+        - value_selector:
+          - monte_carlo_tco
+          - monte_carlo_p10_usd
+          variable: p10
+        - value_selector:
+          - monte_carlo_tco
+          - monte_carlo_p50_usd
+          variable: p50
+        - value_selector:
+          - monte_carlo_tco
+          - monte_carlo_p90_usd
+          variable: p90
+      height: 80
+      id: dashboard_builder
+      position:
+        x: 6800
+        y: 360
+      positionAbsolute:
+        x: 6800
+        y: 360
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        code: "def main(winner: str, win_bid: float, origin: str, dest: str, deadline:\
+          \ str) -> dict:\n    import time, uuid\n    contract_id = f\"CNT-FPA-{int(time.time())}-{str(uuid.uuid4())[:6].upper()}\"\
+          \n    return {\n        'contract_id': contract_id,\n        'awarded_carrier':\
+          \ winner,\n        'rate_per_shipment_usd': win_bid,\n        'annual_commitment_shipments':\
+          \ 48,\n        'contract_tenure': '3 Years (36 Months)',\n        'route':\
+          \ f\"{origin} -> {dest}\",\n        'effective_date': deadline,\n      \
+          \  'award_status': 'FORMALLY_AWARDED_READY_FOR_SIGNATURE'\n    }\n"
+        code_language: python3
+        outputs:
+          annual_commitment_shipments:
+            type: number
+          award_status:
+            type: string
+          awarded_carrier:
+            type: string
+          contract_id:
+            type: string
+          contract_tenure:
+            type: string
+          effective_date:
+            type: string
+          rate_per_shipment_usd:
+            type: number
+          route:
+            type: string
+        selected: false
+        title: Award Decision Record
+        type: code
+        variables:
+        - value_selector:
+          - game_theory_auction
+          - winning_carrier
+          variable: winner
+        - value_selector:
+          - game_theory_auction
+          - winning_bid_usd
+          variable: win_bid
+        - value_selector:
+          - code_master_spec
+          - origin
+          variable: origin
+        - value_selector:
+          - code_master_spec
+          - destination
+          variable: dest
+        - value_selector:
+          - code_master_spec
+          - deadline
+          variable: deadline
+      height: 80
+      id: award_decision_engine
+      position:
+        x: 7120
+        y: 360
+      positionAbsolute:
+        x: 7120
+        y: 360
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        code: "def main(origin: str, dest: str, weight: float, winner: str, win_bid:\
+          \ float) -> dict:\n    import hashlib, time\n    spec_str = f\"{origin}|{dest}|{weight}|{winner}|{win_bid}\"\
+          \n    spec_hash = hashlib.sha256(spec_str.encode('utf-8')).hexdigest()\n\
+          \    \n    # Compute pricing accounting for Groq 120B / 20B / 70B tokens\n\
+          \    token_est_120b = 48000\n    token_est_20b = 16000\n    cost_usd = (token_est_120b\
+          \ * 0.00000045) + (token_est_20b * 0.00000015)\n    \n    return {\n   \
+          \     'audit_sha256_hash': spec_hash,\n        'timestamp_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ',\
+          \ time.gmtime()),\n        'workflow_engine': 'Freight-Procurement-Auction-Engine-v1',\n\
+          \        'pipeline_stages_completed': ['Recomposition', '6-KB RRF Fusion',\
+          \ 'Qualification', 'Reverse Auction', 'TCO Monte Carlo', 'BATNA Negotiation',\
+          \ 'Multi-Brief Dispatch'],\n        'estimated_tokens_consumed': token_est_120b\
+          \ + token_est_20b,\n        'estimated_compute_cost_usd': round(cost_usd,\
+          \ 4),\n        'compliance_status': 'AUDIT_VERIFIED_COMPLIANT'\n    }\n"
+        code_language: python3
+        outputs:
+          audit_sha256_hash:
+            type: string
+          compliance_status:
+            type: string
+          estimated_compute_cost_usd:
+            type: number
+          estimated_tokens_consumed:
+            type: number
+          pipeline_stages_completed:
+            type: array[string]
+          timestamp_utc:
+            type: string
+          workflow_engine:
+            type: string
+        selected: false
+        title: Audit Log & Cost Telemetry
+        type: code
+        variables:
+        - value_selector:
+          - code_master_spec
+          - origin
+          variable: origin
+        - value_selector:
+          - code_master_spec
+          - destination
+          variable: dest
+        - value_selector:
+          - code_master_spec
+          - weight_kg
+          variable: weight
+        - value_selector:
+          - game_theory_auction
+          - winning_carrier
+          variable: winner
+        - value_selector:
+          - game_theory_auction
+          - winning_bid_usd
+          variable: win_bid
+      height: 80
+      id: audit_cost_telemetry
+      position:
+        x: 7440
+        y: 360
+      positionAbsolute:
+        x: 7440
+        y: 360
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        outputs:
+        - value_selector:
+          - award_decision_engine
+          - contract_id
+          variable: contract_id
+        - value_selector:
+          - award_decision_engine
+          - awarded_carrier
+          variable: awarded_carrier
+        - value_selector:
+          - award_decision_engine
+          - rate_per_shipment_usd
+          variable: rate_per_shipment_usd
+        - value_selector:
+          - game_theory_auction
+          - savings_pct
+          variable: savings_vs_market_pct
+        - value_selector:
+          - tco_calculator
+          - total_3yr_tco_usd
+          variable: total_3yr_tco_usd
+        - value_selector:
+          - tco_calculator
+          - npv_3yr_usd
+          variable: npv_3yr_usd
+        - value_selector:
+          - monte_carlo_tco
+          - monte_carlo_p90_usd
+          variable: monte_carlo_p90_usd
+        - value_selector:
+          - brief_procurement
+          - text
+          variable: procurement_brief
+        - value_selector:
+          - brief_legal
+          - text
+          variable: legal_brief
+        - value_selector:
+          - brief_finance
+          - text
+          variable: finance_brief
+        - value_selector:
+          - brief_operations
+          - text
+          variable: operations_brief
+        - value_selector:
+          - package_consolidator
+          - master_package_text
+          variable: executive_package
+        - value_selector:
+          - dashboard_builder
+          - comparison_table
+          variable: comparison_table
+        - value_selector:
+          - audit_cost_telemetry
+          - audit_sha256_hash
+          variable: audit_record
+        selected: false
+        title: Procurement Dispatch Hub
+        type: end
+      height: 80
+      id: end
+      position:
+        x: 7760
+        y: 360
+      positionAbsolute:
+        x: 7760
+        y: 360
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    viewport:
+      x: 0
+      y: 0
+      zoom: 0.75
+  rag_pipeline_variables: []

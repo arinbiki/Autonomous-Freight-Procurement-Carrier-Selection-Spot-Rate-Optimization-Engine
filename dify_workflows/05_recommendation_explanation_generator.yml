@@ -1,0 +1,204 @@
+app:
+  name: Freight-Recommendation-Explainer-v1
+  description: 'Dify Workflow 5: Recommendation Explanation Generator. Produces human-readable,
+    auditable executive rationales, cost drivers, and sensitivity conditions directly
+    from structured decision engine outputs.'
+  icon: ⚖️
+  icon_background: '#F3E8FF'
+  icon_type: null
+  mode: workflow
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: package
+  value:
+    plugin_unique_identifier: langgenius/groq:0.0.17@f042c19aec5896e2141909194c463f8ea4cb2326f5bdc51afbfb6542e6b4bcd8
+    version: null
+kind: app
+version: 0.6.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      enabled: false
+  graph:
+    edges:
+    - data:
+        sourceType: start
+        targetType: llm
+      id: start-source-llm_explain-target
+      source: start
+      sourceHandle: source
+      target: llm_explain
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: llm
+        targetType: code
+      id: llm_explain-source-code_brief-target
+      source: llm_explain
+      sourceHandle: source
+      target: code_brief
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: code
+        targetType: end
+      id: code_brief-source-end-target
+      source: code_brief
+      sourceHandle: source
+      target: end
+      targetHandle: target
+      type: custom
+    nodes:
+    - data:
+        selected: false
+        title: Optimization Result Input
+        type: start
+        variables:
+        - default: "{\n  \"shipment_id\": \"SHP-EXP-001\",\n  \"recommended_carrier\"\
+            : \"GreenLine Eco-Logistics\",\n  \"mode\": \"ROAD_FTL\",\n  \"rate_type\"\
+            : \"CONTRACT\",\n  \"lane\": \"CHICAGO, IL -> DALLAS, TX\",\n  \"total_expected_cost\"\
+            : 2042.0,\n  \"base_freight\": 1680.0,\n  \"fuel_surcharge\": 201.6,\n\
+            \  \"accessorials\": 35.0,\n  \"transit_hours\": 37.2,\n  \"on_time_probability\"\
+            : 0.921,\n  \"capacity_confidence\": 0.884,\n  \"carbon_kg_co2e\": 1567.9,\n\
+            \  \"approval_tier\": \"TIER_1_AUTO\",\n  \"composite_score\": 83.6\n}"
+          label: Optimization Decision JSON
+          max_length: 6000
+          required: true
+          type: paragraph
+          variable: decision_json
+      height: 80
+      id: start
+      position:
+        x: 80
+        y: 280
+      positionAbsolute:
+        x: 80
+        y: 280
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        context:
+          enabled: false
+        model:
+          completion_params:
+            temperature: 0.2
+          mode: chat
+          name: openai/gpt-oss-120b
+          provider: langgenius/groq/groq
+        prompt_template:
+        - role: system
+          text: 'You are an executive supply chain analytics advisor.
+
+            Generate an auditable, professional procurement rationale based STRICTLY
+            on the provided decision factors.
+
+            DO NOT invent facts.
+
+            Provide:
+
+            1. Executive Summary: Why this carrier and mode were chosen.
+
+            2. Landed Cost & Service Breakdown: Key drivers (base, fuel, accessorials,
+            detention expectations).
+
+            3. Risk & Capacity Audit: On-time SLA probability and capacity confidence.
+
+            4. ESG Impact: GLEC carbon footprint analysis.
+
+            5. Sensitivity Conditions: What operational triggers would change this
+            decision.'
+        - role: user
+          text: 'Decision Factors JSON:
+
+            {{#start.decision_json#}}'
+        selected: false
+        title: Executive Rationale Synthesizer
+        type: llm
+      height: 80
+      id: llm_explain
+      position:
+        x: 380
+        y: 280
+      positionAbsolute:
+        x: 380
+        y: 280
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        code: "def main(llm_rationale: str, decision_raw: str) -> dict:\n    import\
+          \ json, hashlib, datetime\n    \n    timestamp = datetime.datetime.utcnow().isoformat()\
+          \ + 'Z'\n    audit_hash = hashlib.sha256((decision_raw + timestamp).encode('utf-8')).hexdigest()[:16]\n\
+          \    \n    audit_markdown = f\"# Autonomous Procurement Decision Audit Report\\\
+          n\\n**Timestamp**: {timestamp} | **Audit Digest**: `{audit_hash}`\\n\\n{llm_rationale}\\\
+          n\\n---\\n*Governance Authority: SOX-Compliant Autonomous Transportation\
+          \ Decision Matrix*\"\n    \n    return {\n        'executive_narrative':\
+          \ str(llm_rationale),\n        'audit_report_markdown': str(audit_markdown),\n\
+          \        'audit_hash': str(audit_hash)\n    }\n"
+        code_language: python3
+        outputs:
+          audit_hash:
+            type: string
+          audit_report_markdown:
+            type: string
+          executive_narrative:
+            type: string
+        selected: false
+        title: Audit Package & Signature Stamping
+        type: code
+        variables:
+        - value_selector:
+          - llm_explain
+          - text
+          variable: llm_rationale
+        - value_selector:
+          - start
+          - decision_json
+          variable: decision_raw
+      height: 80
+      id: code_brief
+      position:
+        x: 680
+        y: 280
+      positionAbsolute:
+        x: 680
+        y: 280
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        outputs:
+        - value_selector:
+          - code_brief
+          - executive_narrative
+          variable: executive_narrative
+        - value_selector:
+          - code_brief
+          - audit_report_markdown
+          variable: audit_report_markdown
+        - value_selector:
+          - code_brief
+          - audit_hash
+          variable: audit_hash
+        selected: false
+        title: Executive Report Hub
+        type: end
+      height: 80
+      id: end
+      position:
+        x: 980
+        y: 280
+      positionAbsolute:
+        x: 980
+        y: 280
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240

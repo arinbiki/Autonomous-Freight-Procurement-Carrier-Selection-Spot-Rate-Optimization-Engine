@@ -1,0 +1,134 @@
+{
+  "name": "04 - Procurement Approval Gate & Carrier Award",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "freight-approval",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook Approval Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [160, 240],
+      "id": "node-webhook-approval"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.body.approval_tier }}",
+              "value2": "TIER_1_AUTO"
+            }
+          ]
+        }
+      },
+      "name": "Is Tier 1 Auto-Award",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [380, 240],
+      "id": "node-check-tier"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://10.0.0.1:8089/api/v1/approvals/' + ($json.body.approval_id || 'APP-AUTO-01') + '/decide' }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  'action': 'APPROVED',\n  'approver': 'SYSTEM_AUTONOMOUS_GATE',\n  'comments': 'Auto-award authorized by Tier 1 governance policy (Cost <= $2,500, nominal risk)'\n}) }}",
+        "options": {}
+      },
+      "name": "Record Auto Approval",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [620, 160],
+      "id": "node-record-auto"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://10.0.0.1:8089/api/v1/approvals/' + ($json.body.approval_id || 'APP-MANUAL-01') + '/decide' }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  'action': $json.body.decision || 'APPROVED',\n  'approver': $json.body.approver_name || 'Senior Logistics Manager',\n  'comments': $json.body.comments || 'Manual governance verification completed.'\n}) }}",
+        "options": {}
+      },
+      "name": "Record Manager Approval",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [620, 320],
+      "id": "node-record-manual"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({\n  'status': 'LOAD_AWARDED',\n  'shipment_id': $('Webhook Approval Trigger').item.json.body.shipment_id,\n  'awarded_carrier': $('Webhook Approval Trigger').item.json.body.carrier_name || 'Apex Freight Logistics',\n  'mode': $('Webhook Approval Trigger').item.json.body.mode || 'ROAD_FTL',\n  'approval_record': $json,\n  'dispatch_status': 'TENDER_OFFER_DISPATCHED_TO_CARRIER'\n}) }}",
+        "options": {}
+      },
+      "name": "Emit Carrier Tender Award",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [860, 240],
+      "id": "node-respond-award"
+    }
+  ],
+  "connections": {
+    "Webhook Approval Trigger": {
+      "main": [
+        [
+          {
+            "node": "Is Tier 1 Auto-Award",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Tier 1 Auto-Award": {
+      "main": [
+        [
+          {
+            "node": "Record Auto Approval",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Record Manager Approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Auto Approval": {
+      "main": [
+        [
+          {
+            "node": "Emit Carrier Tender Award",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Manager Approval": {
+      "main": [
+        [
+          {
+            "node": "Emit Carrier Tender Award",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

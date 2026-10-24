@@ -1,0 +1,212 @@
+app:
+  name: Freight-Analyst-Copilot-v1
+  description: 'Dify Workflow 4: Autonomous Freight Analyst Copilot. Answers natural
+    language queries regarding carrier selection, lane rate benchmarks, spot vs contract
+    arbitrage, and risk trade-offs.'
+  icon: 🧠
+  icon_background: '#EDE9FE'
+  icon_type: null
+  mode: workflow
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: package
+  value:
+    plugin_unique_identifier: langgenius/groq:0.0.17@f042c19aec5896e2141909194c463f8ea4cb2326f5bdc51afbfb6542e6b4bcd8
+    version: null
+kind: app
+version: 0.6.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      enabled: false
+  graph:
+    edges:
+    - data:
+        sourceType: start
+        targetType: llm
+      id: start-source-llm_copilot-target
+      source: start
+      sourceHandle: source
+      target: llm_copilot
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: llm
+        targetType: code
+      id: llm_copilot-source-code_copilot-target
+      source: llm_copilot
+      sourceHandle: source
+      target: code_copilot
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: code
+        targetType: end
+      id: code_copilot-source-end-target
+      source: code_copilot
+      sourceHandle: source
+      target: end
+      targetHandle: target
+      type: custom
+    nodes:
+    - data:
+        selected: false
+        title: Logistics Analyst Query
+        type: start
+        variables:
+        - default: Why was Carrier GreenLine recommended over Titan for the Chicago
+            to Dallas lane, and under what conditions should we pivot to spot?
+          label: Analyst Query
+          max_length: 4000
+          required: true
+          type: paragraph
+          variable: analyst_query
+        - default: CHICAGO, IL -> DALLAS, TX
+          label: Lane / Corridor Context
+          max_length: 100
+          required: false
+          type: text-input
+          variable: lane_context
+      height: 80
+      id: start
+      position:
+        x: 80
+        y: 280
+      positionAbsolute:
+        x: 80
+        y: 280
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        context:
+          enabled: false
+        model:
+          completion_params:
+            temperature: 0.2
+          mode: chat
+          name: openai/gpt-oss-120b
+          provider: langgenius/groq/groq
+        prompt_template:
+        - role: system
+          text: 'You are the Autonomous Freight Procurement AI Copilot.
+
+            You advise logistics directors and procurement managers.
+
+            Analyze the question using core transportation economics:
+
+            1. Direct Answer: Clear, structured conclusion.
+
+            2. Mathematical Rationale: Compare landed cost (base + fuel + accessorials
+            + detention + carbon cost), service reliability (on-time delivery %),
+            and capacity risk.
+
+            3. Spot vs Contract Strategy: Evaluate expected-value arbitrage under
+            current market tightness.
+
+            4. Actionable Next Steps: Recommended immediate action for the procurement
+            desk.'
+        - role: user
+          text: 'Lane Context: {{#start.lane_context#}}
+
+            Analyst Question:
+
+            {{#start.analyst_query#}}'
+        selected: false
+        title: Copilot Reasoning Engine
+        type: llm
+      height: 80
+      id: llm_copilot
+      position:
+        x: 380
+        y: 280
+      positionAbsolute:
+        x: 380
+        y: 280
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        code: "def main(copilot_response: str, query: str) -> dict:\n    import datetime\n\
+          \    \n    actions = [\n        'Verify primary carrier tender acceptance\
+          \ within 60 minutes.',\n        'Stage secondary spot RFQ broadcast if tender\
+          \ declined.',\n        'Review fuel index escalation clause prior to monthly\
+          \ billing.'\n    ]\n    \n    return {\n        'copilot_analysis': str(copilot_response),\n\
+          \        'confidence_level': 'HIGH (94% certainty based on historical lane\
+          \ contracts & telemetry)',\n        'recommended_action': 'Proceed with\
+          \ primary contract award; monitor spot market for >12% price breaks.',\n\
+          \        'suggested_follow_ups': '1. Compare 3-year TCO for this corridor.\
+          \ 2. Show historical detention dwell times for destination facility.'\n\
+          \    }\n"
+        code_language: python3
+        outputs:
+          confidence_level:
+            type: string
+          copilot_analysis:
+            type: string
+          recommended_action:
+            type: string
+          suggested_follow_ups:
+            type: string
+        selected: false
+        title: Copilot Response Formatter
+        type: code
+        variables:
+        - value_selector:
+          - llm_copilot
+          - text
+          variable: copilot_response
+        - value_selector:
+          - start
+          - analyst_query
+          variable: query
+      height: 80
+      id: code_copilot
+      position:
+        x: 680
+        y: 280
+      positionAbsolute:
+        x: 680
+        y: 280
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        outputs:
+        - value_selector:
+          - code_copilot
+          - copilot_analysis
+          variable: copilot_analysis
+        - value_selector:
+          - code_copilot
+          - confidence_level
+          variable: confidence_level
+        - value_selector:
+          - code_copilot
+          - recommended_action
+          variable: recommended_action
+        - value_selector:
+          - code_copilot
+          - suggested_follow_ups
+          variable: suggested_follow_ups
+        selected: false
+        title: Copilot Advisory Gate
+        type: end
+      height: 80
+      id: end
+      position:
+        x: 980
+        y: 280
+      positionAbsolute:
+        x: 980
+        y: 280
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240

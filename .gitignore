@@ -1,0 +1,39 @@
+# Environment secrets and local configurations
+.env
+.env.local
+.env.*.local
+*.env
+dify_workflows/dify_app_keys.json
+dify_app_keys.json
+
+# Python Virtual Environments
+venv/
+env/
+ENV/
+.venv/
+
+# SQLite databases & large synthetic data
+*.db
+*.sqlite
+*.sqlite3
+freight_procurement.db
+
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE and OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary logs & test artifacts
+*.log
+scratch/

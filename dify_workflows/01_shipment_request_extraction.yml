@@ -1,0 +1,214 @@
+app:
+  name: Freight-Shipment-Request-Extractor-v1
+  description: 'Dify Workflow 1: Autonomous unstructured shipment request extraction.
+    Parses raw emails, customer tickets, and chat messages into normalized freight
+    parameters with missing field detection.'
+  icon: 📋
+  icon_background: '#E0F2FE'
+  icon_type: null
+  mode: workflow
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: package
+  value:
+    plugin_unique_identifier: langgenius/groq:0.0.17@f042c19aec5896e2141909194c463f8ea4cb2326f5bdc51afbfb6542e6b4bcd8
+    version: null
+kind: app
+version: 0.6.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      enabled: false
+  graph:
+    edges:
+    - data:
+        sourceType: start
+        targetType: llm
+      id: start-source-llm_extract-target
+      source: start
+      sourceHandle: source
+      target: llm_extract
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: llm
+        targetType: code
+      id: llm_extract-source-code_validate-target
+      source: llm_extract
+      sourceHandle: source
+      target: code_validate
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: code
+        targetType: end
+      id: code_validate-source-end-target
+      source: code_validate
+      sourceHandle: source
+      target: end
+      targetHandle: target
+      type: custom
+    nodes:
+    - data:
+        selected: false
+        title: Raw Shipment Ingestion
+        type: start
+        variables:
+        - default: 'Hi Team, need to move 40,000 lbs of medical vaccines from Chicago
+            IL (60601) to Dallas TX (75201). Must maintain 2-8 C in a 53ft reefer.
+            Pickup Oct 28 morning, deliver by Oct 31 5PM. Priority shipment. Shipper:
+            BioPharma Global.'
+          label: Raw Request Message
+          max_length: 4000
+          required: true
+          type: paragraph
+          variable: raw_request_text
+        - default: BioPharma Global
+          label: Shipper Name
+          max_length: 100
+          required: false
+          type: text-input
+          variable: shipper_name
+      height: 80
+      id: start
+      position:
+        x: 80
+        y: 280
+      positionAbsolute:
+        x: 80
+        y: 280
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        context:
+          enabled: false
+        model:
+          completion_params:
+            temperature: 0.1
+          mode: chat
+          name: openai/gpt-oss-120b
+          provider: langgenius/groq/groq
+        prompt_template:
+        - role: system
+          text: "You are an expert logistics intake intelligence engineer.\nExtract\
+            \ normalized freight requirements into valid JSON.\nJSON schema:\n{\n\
+            \  \"origin_city\": \"CHICAGO\",\n  \"origin_state\": \"IL\",\n  \"origin_postal_code\"\
+            : \"60601\",\n  \"dest_city\": \"DALLAS\",\n  \"dest_state\": \"TX\",\n\
+            \  \"dest_postal_code\": \"75201\",\n  \"commodity_desc\": \"Refrigerated\
+            \ medical vaccines\",\n  \"weight_lbs\": 40000.0,\n  \"value_usd\": 250000.0,\n\
+            \  \"equipment_needed\": \"REEFER_53\",\n  \"is_temp_controlled\": true,\n\
+            \  \"temp_min_c\": 2.0,\n  \"temp_max_c\": 8.0,\n  \"is_hazmat\": false,\n\
+            \  \"hazmat_class\": null,\n  \"priority\": \"HIGH\",\n  \"pickup_date\"\
+            : \"2026-10-28\",\n  \"delivery_date\": \"2026-10-31\"\n}\nOutput ONLY\
+            \ valid JSON."
+        - role: user
+          text: 'Shipper: {{#start.shipper_name#}}
+
+            Request Message:
+
+            {{#start.raw_request_text#}}'
+        selected: false
+        title: LLM Parameter Extraction
+        type: llm
+      height: 80
+      id: llm_extract
+      position:
+        x: 380
+        y: 280
+      positionAbsolute:
+        x: 380
+        y: 280
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        code: "def main(llm_raw: str, shipper: str) -> dict:\n    import json, re\n\
+          \    \n    def parse_json(raw_str):\n        try:\n            m = re.search(r'\\\
+          {.*\\}', raw_str, re.DOTALL)\n            if m:\n                return\
+          \ json.loads(m.group(0))\n            return json.loads(raw_str)\n     \
+          \   except Exception:\n            return {}\n            \n    data = parse_json(llm_raw)\n\
+          \    \n    missing = []\n    if not data.get('origin_city') or not data.get('origin_state'):\n\
+          \        missing.append('origin_location')\n    if not data.get('dest_city')\
+          \ or not data.get('dest_state'):\n        missing.append('destination_location')\n\
+          \    if not data.get('weight_lbs'):\n        missing.append('cargo_weight')\n\
+          \    if not data.get('equipment_needed'):\n        missing.append('equipment_type')\n\
+          \        \n    is_complete = len(missing) == 0\n    clarifications = []\n\
+          \    for m in missing:\n        clarifications.append(f'Please specify missing\
+          \ parameter: {m}')\n        \n    return {\n        'is_complete': bool(is_complete),\n\
+          \        'normalized_payload': json.dumps(data),\n        'missing_fields':\
+          \ ', '.join(missing) if missing else 'None',\n        'clarification_questions':\
+          \ '; '.join(clarifications) if clarifications else 'All core freight parameters\
+          \ complete and validated.'\n    }\n"
+        code_language: python3
+        outputs:
+          clarification_questions:
+            type: string
+          is_complete:
+            type: boolean
+          missing_fields:
+            type: string
+          normalized_payload:
+            type: string
+        selected: false
+        title: Payload Validator & Quality Check
+        type: code
+        variables:
+        - value_selector:
+          - llm_extract
+          - text
+          variable: llm_raw
+        - value_selector:
+          - start
+          - shipper_name
+          variable: shipper
+      height: 80
+      id: code_validate
+      position:
+        x: 680
+        y: 280
+      positionAbsolute:
+        x: 680
+        y: 280
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        outputs:
+        - value_selector:
+          - code_validate
+          - is_complete
+          variable: is_complete
+        - value_selector:
+          - code_validate
+          - normalized_payload
+          variable: normalized_shipment_json
+        - value_selector:
+          - code_validate
+          - missing_fields
+          variable: missing_fields
+        - value_selector:
+          - code_validate
+          - clarification_questions
+          variable: clarification_guidance
+        selected: false
+        title: Extraction Output
+        type: end
+      height: 80
+      id: end
+      position:
+        x: 980
+        y: 280
+      positionAbsolute:
+        x: 980
+        y: 280
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240

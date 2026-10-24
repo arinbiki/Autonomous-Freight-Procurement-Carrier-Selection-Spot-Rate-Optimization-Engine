@@ -1,0 +1,218 @@
+app:
+  name: Freight-Carrier-Quote-Extractor-v1
+  description: 'Dify Workflow 2: Carrier spot quote & tariff parser. Extracts linehaul
+    base rate, fuel surcharge, accessorials, transit days, equipment guarantees, and
+    validity windows from carrier emails.'
+  icon: 💰
+  icon_background: '#FEF3C7'
+  icon_type: null
+  mode: workflow
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: package
+  value:
+    plugin_unique_identifier: langgenius/groq:0.0.17@f042c19aec5896e2141909194c463f8ea4cb2326f5bdc51afbfb6542e6b4bcd8
+    version: null
+kind: app
+version: 0.6.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      enabled: false
+  graph:
+    edges:
+    - data:
+        sourceType: start
+        targetType: llm
+      id: start-source-llm_quote-target
+      source: start
+      sourceHandle: source
+      target: llm_quote
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: llm
+        targetType: code
+      id: llm_quote-source-code_norm-target
+      source: llm_quote
+      sourceHandle: source
+      target: code_norm
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: code
+        targetType: end
+      id: code_norm-source-end-target
+      source: code_norm
+      sourceHandle: source
+      target: end
+      targetHandle: target
+      type: custom
+    nodes:
+    - data:
+        selected: false
+        title: Carrier Email Ingestion
+        type: start
+        variables:
+        - default: Good day Logistics Team, SwiftHaul can cover RFQ-LIVE-902 for $1,650
+            base linehaul plus $180 standard fuel surcharge and $50 pre-cooling fee.
+            2-day delivery guaranteed. Capacity confirmed on dedicated 53ft reefer
+            unit. Rate valid for 24 hours. Best, Marcus Vance, Dispatch Manager.
+          label: Carrier Quote Text
+          max_length: 4000
+          required: true
+          type: paragraph
+          variable: carrier_quote_text
+        - default: RFQ-LIVE-902
+          label: RFQ ID
+          max_length: 50
+          required: false
+          type: text-input
+          variable: rfq_id
+      height: 80
+      id: start
+      position:
+        x: 80
+        y: 280
+      positionAbsolute:
+        x: 80
+        y: 280
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        context:
+          enabled: false
+        model:
+          completion_params:
+            temperature: 0.1
+          mode: chat
+          name: openai/gpt-oss-120b
+          provider: langgenius/groq/groq
+        prompt_template:
+        - role: system
+          text: "You are an expert freight audit and quote extraction specialist.\n\
+            Parse carrier spot rates into valid JSON.\nJSON schema:\n{\n  \"carrier_name\"\
+            : \"SwiftHaul Logistics\",\n  \"base_rate_usd\": 1650.0,\n  \"fuel_surcharge_usd\"\
+            : 180.0,\n  \"accessorials_usd\": 50.0,\n  \"transit_days\": 2,\n  \"\
+            is_equipment_guaranteed\": true,\n  \"validity_hours\": 24,\n  \"exclusions_or_conditions\"\
+            : \"Pre-cooling fee included, 24h validity\"\n}\nOutput ONLY valid JSON."
+        - role: user
+          text: 'Associated RFQ: {{#start.rfq_id#}}
+
+            Carrier Reply Text:
+
+            {{#start.carrier_quote_text#}}'
+        selected: false
+        title: LLM Quote Extractor
+        type: llm
+      height: 80
+      id: llm_quote
+      position:
+        x: 380
+        y: 280
+      positionAbsolute:
+        x: 380
+        y: 280
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        code: "def main(llm_raw: str, rfq_id: str) -> dict:\n    import json, re\n\
+          \    \n    def parse_json(raw_str):\n        try:\n            m = re.search(r'\\\
+          {.*\\}', raw_str, re.DOTALL)\n            if m:\n                return\
+          \ json.loads(m.group(0))\n            return json.loads(raw_str)\n     \
+          \   except Exception:\n            return {}\n            \n    q = parse_json(llm_raw)\n\
+          \    base = float(q.get('base_rate_usd', 0.0))\n    fuel = float(q.get('fuel_surcharge_usd',\
+          \ 0.0))\n    acc = float(q.get('accessorials_usd', 0.0))\n    total = round(base\
+          \ + fuel + acc, 2)\n    \n    confidence = 0.95 if base > 0 and q.get('carrier_name')\
+          \ else 0.40\n    \n    q['total_quote_usd'] = total\n    q['rfq_id'] = str(rfq_id)\n\
+          \    \n    return {\n        'carrier_name': str(q.get('carrier_name', 'Unknown\
+          \ Carrier')),\n        'total_quote_usd': float(total),\n        'transit_days':\
+          \ int(q.get('transit_days', 3)),\n        'is_guaranteed': bool(q.get('is_equipment_guaranteed',\
+          \ False)),\n        'extraction_confidence': float(confidence),\n      \
+          \  'structured_quote_json': json.dumps(q)\n    }\n"
+        code_language: python3
+        outputs:
+          carrier_name:
+            type: string
+          extraction_confidence:
+            type: number
+          is_guaranteed:
+            type: boolean
+          structured_quote_json:
+            type: string
+          total_quote_usd:
+            type: number
+          transit_days:
+            type: number
+        selected: false
+        title: Rate Normalization & Confidence Scorer
+        type: code
+        variables:
+        - value_selector:
+          - llm_quote
+          - text
+          variable: llm_raw
+        - value_selector:
+          - start
+          - rfq_id
+          variable: rfq_id
+      height: 80
+      id: code_norm
+      position:
+        x: 680
+        y: 280
+      positionAbsolute:
+        x: 680
+        y: 280
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240
+    - data:
+        outputs:
+        - value_selector:
+          - code_norm
+          - carrier_name
+          variable: extracted_carrier
+        - value_selector:
+          - code_norm
+          - total_quote_usd
+          variable: total_all_in_cost
+        - value_selector:
+          - code_norm
+          - transit_days
+          variable: promised_transit_days
+        - value_selector:
+          - code_norm
+          - is_guaranteed
+          variable: capacity_guaranteed
+        - value_selector:
+          - code_norm
+          - extraction_confidence
+          variable: confidence_score
+        - value_selector:
+          - code_norm
+          - structured_quote_json
+          variable: quote_record
+        selected: false
+        title: Quote Output Gate
+        type: end
+      height: 80
+      id: end
+      position:
+        x: 980
+        y: 280
+      positionAbsolute:
+        x: 980
+        y: 280
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 240

@@ -1,0 +1,178 @@
+{
+  "name": "01 - Freight Intake & Eligibility Filtering",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "freight-intake",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook Ingestion",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [180, 240],
+      "id": "node-webhook-intake"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://10.0.0.1:8089/api/v1/shipments/intake",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "customer_id",
+              "value": "={{ $json.body.customer_id || 'CUST-ENTERPRISE' }}"
+            },
+            {
+              "name": "customer_name",
+              "value": "={{ $json.body.customer_name || 'Enterprise Logistics Partner' }}"
+            },
+            {
+              "name": "origin",
+              "value": "={{ $json.body.origin || { 'city': 'CHICAGO', 'state': 'IL' } }}"
+            },
+            {
+              "name": "destination",
+              "value": "={{ $json.body.destination || { 'city': 'DALLAS', 'state': 'TX' } }}"
+            },
+            {
+              "name": "commodity",
+              "value": "={{ $json.body.commodity || { 'description': 'Standard Freight', 'weight_lbs': 40000.0, 'value_usd': 50000.0 } }}"
+            },
+            {
+              "name": "equipment_needed",
+              "value": "={{ $json.body.equipment_needed || 'DRY_VAN_53' }}"
+            },
+            {
+              "name": "priority",
+              "value": "={{ $json.body.priority || 'STANDARD' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Python Normalization Service",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [400, 240],
+      "id": "node-http-normalize"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.status }}",
+              "value2": "NORMALIZED"
+            }
+          ]
+        }
+      },
+      "name": "Check Validation",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [620, 240],
+      "id": "node-if-valid"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://10.0.0.1:8089/api/v1/procurement/optimize",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ 'shipment_payload': $json.shipment }) }}",
+        "options": {}
+      },
+      "name": "Trigger Eligibility & Optimization",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [840, 180],
+      "id": "node-trigger-optimize"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ 'status': 'INTAKE_SUCCESS', 'shipment_id': $json.shipment_id, 'recommendation': $json.recommendation }) }}",
+        "options": {}
+      },
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1060, 180],
+      "id": "node-respond-success"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ 'status': 'INTAKE_ERROR', 'message': 'Payload validation failed' }) }}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "name": "Respond Validation Failure",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [840, 320],
+      "id": "node-respond-fail"
+    }
+  ],
+  "connections": {
+    "Webhook Ingestion": {
+      "main": [
+        [
+          {
+            "node": "Python Normalization Service",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Python Normalization Service": {
+      "main": [
+        [
+          {
+            "node": "Check Validation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Validation": {
+      "main": [
+        [
+          {
+            "node": "Trigger Eligibility & Optimization",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Validation Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger Eligibility & Optimization": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

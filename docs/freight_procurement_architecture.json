@@ -1,0 +1,287 @@
+{
+  "$schema": "https://raw.githubusercontent.com/tt-a1i/archify/main/schema.json",
+  "version": 1,
+  "title": "Autonomous Freight Procurement, Carrier Selection & Spot Rate Optimization Engine",
+  "description": "Enterprise-grade 5-layer autonomous freight procurement system featuring multi-objective carrier scoring, GLEC carbon emissions calculation, spot rate arbitrage, and tiered financial approval governance.",
+  "boundaries": [
+    {
+      "id": "bnd_intake",
+      "name": "Integration & Ingestion Layer",
+      "type": "system",
+      "color": "#3B82F6",
+      "description": "Multi-channel freight intake from ERP, TMS, customer portals, and freight broker spreadsheets."
+    },
+    {
+      "id": "bnd_n8n",
+      "name": "n8n Orchestration Layer",
+      "type": "system",
+      "color": "#F97316",
+      "description": "Central event bus managing intake, spot RFQ discovery, approval routing, and carrier tender dispatch."
+    },
+    {
+      "id": "bnd_core",
+      "name": "Python Decision & Optimization Core",
+      "type": "system",
+      "color": "#10B981",
+      "description": "Analytical intelligence services: geodesic routing, constraint filtering, landed cost, transit distributions, and composite scoring."
+    },
+    {
+      "id": "bnd_ai",
+      "name": "AI & Language Interaction Layer",
+      "type": "system",
+      "color": "#8B5CF6",
+      "description": "Local Ollama Qwen 3B model and Dify workflow copilot for RFQ generation, unstructured quote parsing, and explainability."
+    },
+    {
+      "id": "bnd_gov",
+      "name": "Operational & Governance Layer",
+      "type": "system",
+      "color": "#EF4444",
+      "description": "Tiered financial sign-off thresholds, relational SQLite persistence, and immutable audit logging."
+    }
+  ],
+  "components": [
+    {
+      "id": "comp_erp",
+      "name": "Enterprise ERP & TMS Webhooks",
+      "type": "service",
+      "description": "Transmits raw shipment demands and order milestones via REST webhooks.",
+      "icon": "globe",
+      "position": { "x": 120, "y": 140 },
+      "boundaryId": "bnd_intake"
+    },
+    {
+      "id": "comp_intake_api",
+      "name": "Shipment Intake Normalizer",
+      "type": "service",
+      "description": "Validates payload, resolves geographic hubs, and standardizes Shipment models.",
+      "icon": "file-text",
+      "position": { "x": 120, "y": 280 },
+      "boundaryId": "bnd_intake"
+    },
+    {
+      "id": "comp_n8n_intake",
+      "name": "01 - Freight Intake Workflow",
+      "type": "workflow",
+      "description": "Ingests raw requests, triggers normalization, and verifies eligibility.",
+      "icon": "git-merge",
+      "position": { "x": 520, "y": 120 },
+      "boundaryId": "bnd_n8n"
+    },
+    {
+      "id": "comp_n8n_opt",
+      "name": "02 - Optimization Workflow",
+      "type": "workflow",
+      "description": "Executes multi-objective ranking and evaluates capacity confidence.",
+      "icon": "cpu",
+      "position": { "x": 520, "y": 240 },
+      "boundaryId": "bnd_n8n"
+    },
+    {
+      "id": "comp_n8n_rfq",
+      "name": "03 - Spot RFQ Broadcast Workflow",
+      "type": "workflow",
+      "description": "Broadcasts RFQs, extracts carrier quotes, and calculates spot vs contract arbitrage.",
+      "icon": "send",
+      "position": { "x": 520, "y": 360 },
+      "boundaryId": "bnd_n8n"
+    },
+    {
+      "id": "comp_n8n_award",
+      "name": "04 - Approval & Award Workflow",
+      "type": "workflow",
+      "description": "Enforces tiered governance matrix and dispatches tender awards to winning carriers.",
+      "icon": "check-circle",
+      "position": { "x": 520, "y": 480 },
+      "boundaryId": "bnd_n8n"
+    },
+    {
+      "id": "comp_enrichment",
+      "name": "Geodesic & Lane Enrichment",
+      "type": "service",
+      "description": "Calculates road circuity miles, weather severity, and corridor congestion factors.",
+      "icon": "map-pin",
+      "position": { "x": 920, "y": 120 },
+      "boundaryId": "bnd_core"
+    },
+    {
+      "id": "comp_eligibility",
+      "name": "Hard Constraint Filter",
+      "type": "service",
+      "description": "Filters candidates by active compliance, cargo insurance, hazmat endorsement, and reefer specs.",
+      "icon": "shield",
+      "position": { "x": 920, "y": 220 },
+      "boundaryId": "bnd_core"
+    },
+    {
+      "id": "comp_landed_cost",
+      "name": "Landed Cost & Rate Engine",
+      "type": "service",
+      "description": "Computes Base, Fuel, probabilistic Detention, Delay Penalties, and Carbon offsets.",
+      "icon": "dollar-sign",
+      "position": { "x": 920, "y": 320 },
+      "boundaryId": "bnd_core"
+    },
+    {
+      "id": "comp_transit_engine",
+      "name": "Transit Distribution Engine",
+      "type": "service",
+      "description": "Predicts P50, P80, P90 transit hours and SLA on-time arrival probability.",
+      "icon": "clock",
+      "position": { "x": 920, "y": 420 },
+      "boundaryId": "bnd_core"
+    },
+    {
+      "id": "comp_optimizer",
+      "name": "Multi-Objective Optimizer",
+      "type": "service",
+      "description": "Minimizes Total Expected Cost + Risk + Delay + Carbon while maximizing strategic fit.",
+      "icon": "layers",
+      "position": { "x": 920, "y": 520 },
+      "boundaryId": "bnd_core"
+    },
+    {
+      "id": "comp_qwen_nlp",
+      "name": "Ollama Qwen 3B NLP Engine",
+      "type": "service",
+      "description": "Extracts quote attributes from unstructured text and drafts RFQ packages.",
+      "icon": "message-square",
+      "position": { "x": 1360, "y": 180 },
+      "boundaryId": "bnd_ai"
+    },
+    {
+      "id": "comp_dify_copilot",
+      "name": "Dify Reverse Auction Copilot",
+      "type": "service",
+      "description": "Orchestrates game-theoretic reverse auctions, TCO Monte Carlo projections, and BATNA analysis.",
+      "icon": "trending-up",
+      "position": { "x": 1360, "y": 360 },
+      "boundaryId": "bnd_ai"
+    },
+    {
+      "id": "comp_approval_matrix",
+      "name": "Tiered Financial Governance Gate",
+      "type": "service",
+      "description": "Tier 1 Auto-Award (<= $2,500), Tier 2 Supervisor, Tier 3 Procurement, Tier 4 VP Supply Chain.",
+      "icon": "lock",
+      "position": { "x": 1760, "y": 180 },
+      "boundaryId": "bnd_gov"
+    },
+    {
+      "id": "comp_sqlite_db",
+      "name": "SQLite & Immutable Audit Log",
+      "type": "database",
+      "description": "Stores master carrier scorecards, contracted tariffs, recommendations, and auditable event trails.",
+      "icon": "database",
+      "position": { "x": 1760, "y": 360 },
+      "boundaryId": "bnd_gov"
+    }
+  ],
+  "connections": [
+    {
+      "id": "conn_1",
+      "sourceId": "comp_erp",
+      "targetId": "comp_n8n_intake",
+      "label": "Shipment Ingestion Webhook",
+      "direction": "outgoing"
+    },
+    {
+      "id": "conn_2",
+      "sourceId": "comp_n8n_intake",
+      "targetId": "comp_intake_api",
+      "label": "Normalize Payload",
+      "direction": "outgoing"
+    },
+    {
+      "id": "conn_3",
+      "sourceId": "comp_intake_api",
+      "targetId": "comp_enrichment",
+      "label": "Enrich Geodesics & Lanes",
+      "direction": "outgoing"
+    },
+    {
+      "id": "conn_4",
+      "sourceId": "comp_enrichment",
+      "targetId": "comp_eligibility",
+      "label": "Filter Constraints",
+      "direction": "outgoing"
+    },
+    {
+      "id": "conn_5",
+      "sourceId": "comp_eligibility",
+      "targetId": "comp_landed_cost",
+      "label": "Landed Cost Breakdown",
+      "direction": "outgoing"
+    },
+    {
+      "id": "conn_6",
+      "sourceId": "comp_eligibility",
+      "targetId": "comp_transit_engine",
+      "label": "Transit & SLA Probability",
+      "direction": "outgoing"
+    },
+    {
+      "id": "conn_7",
+      "sourceId": "comp_landed_cost",
+      "targetId": "comp_optimizer",
+      "label": "Expected Value Metrics",
+      "direction": "outgoing"
+    },
+    {
+      "id": "conn_8",
+      "sourceId": "comp_transit_engine",
+      "targetId": "comp_optimizer",
+      "label": "SLA & Delay Exposure",
+      "direction": "outgoing"
+    },
+    {
+      "id": "conn_9",
+      "sourceId": "comp_optimizer",
+      "targetId": "comp_n8n_opt",
+      "label": "Recommendation Payload",
+      "direction": "outgoing"
+    },
+    {
+      "id": "conn_10",
+      "sourceId": "comp_n8n_opt",
+      "targetId": "comp_n8n_rfq",
+      "label": "Trigger RFQ if Low Capacity",
+      "direction": "outgoing"
+    },
+    {
+      "id": "conn_11",
+      "sourceId": "comp_n8n_rfq",
+      "targetId": "comp_qwen_nlp",
+      "label": "RFQ Text & Quote Parsing",
+      "direction": "outgoing"
+    },
+    {
+      "id": "conn_12",
+      "sourceId": "comp_n8n_rfq",
+      "targetId": "comp_dify_copilot",
+      "label": "Reverse Auction Negotiations",
+      "direction": "outgoing"
+    },
+    {
+      "id": "conn_13",
+      "sourceId": "comp_n8n_opt",
+      "targetId": "comp_n8n_award",
+      "label": "Route Award Gate",
+      "direction": "outgoing"
+    },
+    {
+      "id": "conn_14",
+      "sourceId": "comp_n8n_award",
+      "targetId": "comp_approval_matrix",
+      "label": "Evaluate Approval Tier",
+      "direction": "outgoing"
+    },
+    {
+      "id": "conn_15",
+      "sourceId": "comp_optimizer",
+      "targetId": "comp_sqlite_db",
+      "label": "Persist Audit Log & Recs",
+      "direction": "outgoing"
+    }
+  ]
+}

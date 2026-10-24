@@ -1,0 +1,125 @@
+{
+  "name": "03 - Spot RFQ Broadcast & Rate Discovery",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "freight-rfq",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook RFQ Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [160, 240],
+      "id": "node-webhook-rfq"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://10.0.0.1:8089/api/v1/rfq/generate",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.body.shipment || $json.body) }}",
+        "options": {}
+      },
+      "name": "Generate RFQ Package",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [380, 240],
+      "id": "node-generate-rfq"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://10.0.0.1:8089/api/v1/rfq/extract-quote",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ 'raw_text': $('Webhook RFQ Trigger').item.json.body.carrier_quote_text || 'We can move this load for $1,650 all-in with 2-day delivery guaranteed. SwiftHaul Logistics.' }) }}",
+        "options": {}
+      },
+      "name": "NLP Quote Extraction Service",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [600, 240],
+      "id": "node-extract-quote"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://10.0.0.1:8089/api/v1/procurement/optimize",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  'shipment_payload': $('Webhook RFQ Trigger').item.json.body.shipment || $('Webhook RFQ Trigger').item.json.body,\n  'active_spot_quotes': [{\n    'quote_id': 'QUOTE-SPOT-001',\n    'rfq_id': 'RFQ-LIVE-001',\n    'carrier_id': 'CARRIER-SWIFT',\n    'carrier_name': $json.quote.carrier_name,\n    'base_rate_usd': $json.quote.base_rate_usd,\n    'fuel_surcharge_usd': $json.quote.fuel_surcharge_usd,\n    'accessorials_usd': $json.quote.accessorials_usd,\n    'total_quote_usd': $json.quote.total_quote_usd,\n    'transit_days_promised': $json.quote.transit_days,\n    'valid_hours': 24,\n    'is_equipment_guaranteed': true\n  }]\n}) }}",
+        "options": {}
+      },
+      "name": "Re-Optimize with Spot Quotes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [820, 240],
+      "id": "node-reoptimize-spot"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({\n  'status': 'SPOT_ARBITRAGE_EVALUATED',\n  'shipment_id': $json.shipment_id,\n  'optimal_carrier': $json.recommendation.carrier_name,\n  'selected_rate_type': $json.recommendation.rate_type,\n  'landed_cost': $json.recommendation.cost_breakdown.total_expected_cost,\n  'approval_tier': $json.recommendation.approval_tier,\n  'explanation': $json.recommendation.explanation.executive_summary\n}) }}",
+        "options": {}
+      },
+      "name": "Respond Spot Arbitrage",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1040, 240],
+      "id": "node-respond-arbitrage"
+    }
+  ],
+  "connections": {
+    "Webhook RFQ Trigger": {
+      "main": [
+        [
+          {
+            "node": "Generate RFQ Package",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate RFQ Package": {
+      "main": [
+        [
+          {
+            "node": "NLP Quote Extraction Service",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NLP Quote Extraction Service": {
+      "main": [
+        [
+          {
+            "node": "Re-Optimize with Spot Quotes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Re-Optimize with Spot Quotes": {
+      "main": [
+        [
+          {
+            "node": "Respond Spot Arbitrage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

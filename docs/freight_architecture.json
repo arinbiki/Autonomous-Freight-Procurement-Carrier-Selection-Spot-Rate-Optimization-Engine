@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Autonomous Freight Procurement & Spot Rate Optimization Engine",
+    "output": "docs/index.html",
+    "visual_preset": "blueprint",
+    "animation": "trace",
+    "quality_profile": "showcase"
+  },
+  "components": [
+    { "id": "shipper_portal", "type": "external", "label": "Shipper Portal & TMS", "sublabel": "EDI 204 / JSON Intake", "pos": [30, 160], "size": [145, 58], "tag": "ERP / TMS" },
+    { "id": "spot_feed", "type": "external", "label": "Spot Market Feed", "sublabel": "Carrier Bids & Quotes", "pos": [30, 360], "size": [145, 58], "tag": "Spot Market" },
+
+    { "id": "dify_shipment_nlp", "type": "cloud", "label": "Dify Request Extractor", "sublabel": "App fca6be40-d451", "pos": [220, 160], "size": [160, 58], "tag": "AI NLP" },
+    { "id": "dify_quote_nlp", "type": "cloud", "label": "Dify Quote Parser", "sublabel": "App f591ec1b-5fe2", "pos": [220, 360], "size": [160, 58], "tag": "AI NLP" },
+    { "id": "dify_copilot", "type": "cloud", "label": "Freight Analyst Copilot", "sublabel": "App 9a6bcacb-b7f9", "pos": [220, 560], "size": [160, 58], "tag": "AI Agent" },
+    { "id": "dify_explainer", "type": "cloud", "label": "Decision Explainer", "sublabel": "App db4de0b0-fc60", "pos": [220, 720], "size": [160, 58], "tag": "AI Audit" },
+
+    { "id": "n8n_intake", "type": "backend", "label": "01 Intake & Filter", "sublabel": "Workflow eSjHfjcr", "pos": [430, 160], "size": [165, 58], "tag": "Orchestration" },
+    { "id": "n8n_rfq", "type": "backend", "label": "03 Spot RFQ Broadcast", "sublabel": "Workflow bQe2Dopk", "pos": [430, 360], "size": [165, 58], "tag": "Orchestration" },
+
+    { "id": "engine_routing", "type": "backend", "label": "Enrichment & Routing", "sublabel": "Circuity + Weather", "pos": [640, 160], "size": [170, 58], "tag": "FastAPI :8089" },
+    { "id": "engine_eligibility", "type": "security", "label": "Eligibility Hard Filter", "sublabel": "Safety, Insurance, Limits", "pos": [640, 260], "size": [170, 58], "tag": "Compliance" },
+    { "id": "engine_landed_cost", "type": "backend", "label": "Landed Cost Engine", "sublabel": "Fuel + Accessorials", "pos": [640, 360], "size": [170, 58], "tag": "Rate Science" },
+    { "id": "engine_transit_esg", "type": "backend", "label": "P90 Transit & GLEC CO2", "sublabel": "Transit & Emissions", "pos": [640, 460], "size": [170, 58], "tag": "Analytics" },
+    { "id": "engine_arbitrage", "type": "backend", "label": "Spot Arbitrage Engine", "sublabel": "Expected Value Solver", "pos": [640, 560], "size": [170, 58], "tag": "Arbitrage" },
+    { "id": "engine_governance", "type": "security", "label": "Financial Approval Matrix", "sublabel": "4-Tier SOX Matrix", "pos": [640, 660], "size": [170, 58], "tag": "SOX Audit" },
+
+    { "id": "n8n_scoring", "type": "backend", "label": "02 Carrier Scoring", "sublabel": "Workflow YbpwdC29", "pos": [860, 260], "size": [165, 58], "tag": "Orchestration" },
+    { "id": "n8n_award", "type": "backend", "label": "04 Approval & Award", "sublabel": "Workflow 3mKTtV3a", "pos": [860, 660], "size": [165, 58], "tag": "SOX Gate" },
+
+    { "id": "db_ledger", "type": "database", "label": "Enterprise Ledger", "sublabel": "SQLite WAL / PostgreSQL", "pos": [1080, 260], "size": [165, 58], "tag": "Persistence" },
+    { "id": "carrier_dispatch", "type": "messagebus", "label": "Carrier Tender Dispatch", "sublabel": "EDI 214 / Webhooks", "pos": [1080, 460], "size": [175, 58], "tag": "Tender" },
+    { "id": "carrier_network", "type": "external", "label": "Carrier Fleet Partners", "sublabel": "Apex, GreenLine, Swift...", "pos": [1080, 660], "size": [175, 58], "tag": "Fleet" }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "Dify Cognitive & NLP Subsystem", "wraps": ["dify_shipment_nlp", "dify_quote_nlp", "dify_copilot", "dify_explainer"], "pad": 16 },
+    { "kind": "security-group", "label": "Python Sub-Millisecond Decision Core (FastAPI :8089)", "wraps": ["engine_routing", "engine_eligibility", "engine_landed_cost", "engine_transit_esg", "engine_arbitrage", "engine_governance"], "pad": 16 },
+    { "kind": "region", "label": "Enterprise Ledger & Fleet Integration", "wraps": ["db_ledger", "carrier_dispatch", "carrier_network"], "pad": 16 }
+  ],
+  "connections": [
+    { "from": "shipper_portal", "to": "dify_shipment_nlp", "label": "unstructured text", "variant": "emphasis" },
+    { "from": "dify_shipment_nlp", "to": "n8n_intake", "label": "extracted JSON", "variant": "emphasis" },
+    { "from": "spot_feed", "to": "dify_quote_nlp", "label": "raw quotes", "variant": "emphasis" },
+    { "from": "dify_quote_nlp", "to": "n8n_rfq", "label": "parsed spot quote", "variant": "emphasis" },
+
+    { "from": "n8n_intake", "to": "engine_routing", "label": "HTTP :8089/enrich", "variant": "emphasis" },
+    { "from": "engine_routing", "to": "engine_eligibility", "label": "road miles", "route": "straight" },
+    { "from": "engine_eligibility", "to": "n8n_scoring", "label": "eligible carriers", "variant": "emphasis" },
+
+    { "from": "n8n_scoring", "to": "engine_landed_cost", "label": "optimize load", "variant": "emphasis" },
+    { "from": "engine_landed_cost", "to": "engine_transit_esg", "label": "cost breakdown", "route": "straight" },
+    { "from": "engine_transit_esg", "to": "engine_arbitrage", "label": "ESG & P90", "route": "straight" },
+    { "from": "engine_arbitrage", "to": "engine_governance", "label": "optimal rate", "route": "straight" },
+    { "from": "engine_governance", "to": "n8n_award", "label": "approval tier", "variant": "security" },
+
+    { "from": "n8n_award", "to": "db_ledger", "label": "audit log", "variant": "security" },
+    { "from": "n8n_award", "to": "carrier_dispatch", "label": "tender award", "variant": "emphasis" },
+    { "from": "carrier_dispatch", "to": "carrier_network", "label": "dispatch confirmation", "variant": "emphasis" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Throughput & Latency Benchmarks",
+      "items": [
+        "Tier 1 Core Engine: Evaluated 1,000,000 shipments in 235.18 seconds",
+        "Engine Throughput: 4,252 procurement decisions / second",
+        "Mean Latency: 0.235 ms per multi-objective optimization decision",
+        "Tier 2 n8n Ingestion: 100% success rate across live parallel webhooks"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Autonomous Financial Optimization",
+      "items": [
+        "Total Freight Spend Analyzed: $2.628 Billion across 50 strategic corridors",
+        "Spot Market Arbitrage: $413,923 savings achieved on 62,687 spot loads (6.3% award rate)",
+        "GLEC Carbon Framework: Computed 1,757,564 metric tons CO2e footprint",
+        "SOX Financial Governance: 33.6% Auto-Approved, 66.4% Supervisor Reviewed"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Tri-Platform Integration Architecture",
+      "items": [
+        "Dify AI Layer: Extracts unstructured emails/quotes & generates audit explanations",
+        "n8n Workflow Fabric: Event-driven coordination across 4 automated pipelines",
+        "FastAPI Analytical Core: Zero-IO parallelized mathematical solvers",
+        "Carrier Network: Real-time tender, status tracking, and SLA verification"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,121 @@
+{
+  "name": "02 - Carrier Scoring & Multi-Objective Optimization",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "freight-optimize",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook Optimize Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [180, 240],
+      "id": "node-webhook-opt"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://10.0.0.1:8089/api/v1/procurement/optimize",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.body) }}",
+        "options": {}
+      },
+      "name": "Execute Multi-Objective Optimizer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [400, 240],
+      "id": "node-run-optimizer"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.recommendation.capacity_confidence }}",
+              "operation": "largerEqual",
+              "value2": 0.75
+            }
+          ]
+        }
+      },
+      "name": "Evaluate Capacity Confidence",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [640, 240],
+      "id": "node-eval-capacity"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ 'action': 'AWARD_READY', 'shipment_id': $json.shipment_id, 'winner': $json.recommendation.carrier_name, 'mode': $json.recommendation.mode, 'total_cost': $json.recommendation.cost_breakdown.total_expected_cost, 'approval_tier': $json.recommendation.approval_tier, 'alternatives': $json.recommendation.alternatives }) }}",
+        "options": {}
+      },
+      "name": "Route To Approval Gate",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [880, 180],
+      "id": "node-route-approval"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ 'action': 'RFQ_REQUIRED', 'shipment_id': $json.shipment_id, 'reason': 'Capacity confidence below safe execution limit (' + ($json.recommendation.capacity_confidence * 100).toFixed(1) + '%)', 'fallback_recommendation': $json.recommendation }) }}",
+        "options": {}
+      },
+      "name": "Route To Spot RFQ Engine",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [880, 320],
+      "id": "node-route-rfq"
+    }
+  ],
+  "connections": {
+    "Webhook Optimize Trigger": {
+      "main": [
+        [
+          {
+            "node": "Execute Multi-Objective Optimizer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Multi-Objective Optimizer": {
+      "main": [
+        [
+          {
+            "node": "Evaluate Capacity Confidence",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate Capacity Confidence": {
+      "main": [
+        [
+          {
+            "node": "Route To Approval Gate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Route To Spot RFQ Engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
